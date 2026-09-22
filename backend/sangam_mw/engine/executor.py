@@ -36,6 +36,7 @@ from .handlers import (
     RouterHandler,
     SetVariableHandler,
     TransformFilterHandler,
+    TransformFormatHandler,
     TransformMapHandler,
     TransformScriptHandler,
     TransformSQLHandler,
@@ -47,6 +48,7 @@ logger = structlog.get_logger(__name__)
 _HANDLER_MAP: dict[str, StepHandler] = {
     "connector_read": ConnectorReadHandler(),
     "connector_write": ConnectorWriteHandler(),
+    "transform_format": TransformFormatHandler(),
     "transform_map": TransformMapHandler(),
     "transform_filter": TransformFilterHandler(),
     "transform_sql": TransformSQLHandler(),

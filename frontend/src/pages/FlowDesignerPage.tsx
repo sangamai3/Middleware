@@ -20,6 +20,7 @@ const STEP_META: Record<string, { label: string; family: NodeFamily }> = {
   event_trigger:     { label: 'Event',         family: 'trigger' },
   connector_read:    { label: 'Source',        family: 'connector' },
   connector_write:   { label: 'Target',        family: 'connector' },
+  transform_format:  { label: 'Format Convert', family: 'transform' },
   transform_map:     { label: 'Map Fields',    family: 'transform' },
   transform_filter:  { label: 'Filter',        family: 'transform' },
   transform_sql:     { label: 'SQL',           family: 'transform' },
@@ -53,7 +54,7 @@ function stepsToCanvas(steps: StepConfig[]): { nodes: CanvasNode[]; edges: Edge[
     const meta = STEP_META[step.type] ?? { label: step.type.replace(/_/g, ' '), family: 'utility' as NodeFamily }
     return {
       id: step.id,
-      type: 'default',
+      type: step.type,
       position: { x: 80 + i * 220, y: 180 },
       data: {
         label: (step.config.label as string) || meta.label,

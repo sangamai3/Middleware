@@ -102,11 +102,14 @@ class ConnectorWriteHandler(StepHandler):
         source_files: dict[str, pd.DataFrame] | None = context.get_meta(f"_source_files_{source_step}")
 
         if write_per_source and source_files:
-            # Write each source file as a separate output file
+            # output_format overrides the file extension (e.g. ".json" converts CSV → JSON)
+            output_format: str = (config.get("output_format") or "").strip()
             ts = datetime.now().strftime("%Y%m%d_%H%M%S") if add_ts else ""
             for filename, df in source_files.items():
                 p = Path(filename)
-                out_name = f"{p.stem}_{ts}{p.suffix}" if (add_ts and p.suffix) else (f"{p.stem}_{ts}" if add_ts else filename)
+                suffix = output_format if output_format else p.suffix
+                stem = f"{p.stem}_{ts}" if add_ts else p.stem
+                out_name = f"{stem}{suffix}"
                 write_cfg = WriteConfig(object=out_name, mode=write_mode, extra=extra)
                 connector.write(df, handle, write_cfg)  # type: ignore[union-attr]
             return

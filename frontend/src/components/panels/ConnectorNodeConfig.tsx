@@ -236,7 +236,7 @@ export function ConnectorNodeConfig({ data, onUpdate, mode }: Props) {
                   Write one file per source file
                 </label>
                 {(cfg.write_per_source === 'true' || cfg.write_per_source === true) && (
-                  <div className="ccn-hint-sm">Each file keeps its original name in the target folder</div>
+                  <div className="ccn-hint-sm">Each source file is written separately to the target folder</div>
                 )}
               </div>
             )}
@@ -261,6 +261,55 @@ export function ConnectorNodeConfig({ data, onUpdate, mode }: Props) {
                 {family === 'file' && mode === 'source' && (
                   <div className="ccn-hint-sm">Use <code>*.csv</code> to read all CSV files in the folder</div>
                 )}
+                {/* Format quick-pick buttons for target */}
+                {family === 'file' && mode === 'target' && (
+                  <div className="ccn-fmt-row">
+                    <span className="ccn-fmt-label">Format:</span>
+                    {(['.csv', '.json', '.parquet', '.xlsx'] as const).map((ext) => {
+                      const cur = (cfg.object as string) || ''
+                      const dot = cur.lastIndexOf('.')
+                      const curExt = dot > 0 ? cur.slice(dot) : ''
+                      return (
+                        <button
+                          key={ext}
+                          type="button"
+                          className={`ccn-fmt-btn${curExt === ext ? ' ccn-fmt-btn--active' : ''}`}
+                          onClick={() => {
+                            const stem = dot > 0 ? cur.slice(0, dot) : (cur || 'output')
+                            setData('object', stem + ext)
+                          }}
+                        >
+                          {ext.slice(1).toUpperCase()}
+                        </button>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Output format for write-per-source (converts each file to chosen format) */}
+            {family === 'file' && mode === 'target' && (cfg.write_per_source === 'true' || cfg.write_per_source === true) && (
+              <div className="config-field">
+                <label className="config-label">Output format</label>
+                <div className="ccn-fmt-row ccn-fmt-row--block">
+                  {(['.csv', '.json', '.parquet', '.xlsx'] as const).map((ext) => {
+                    const cur = (cfg.output_format as string) || '.csv'
+                    return (
+                      <button
+                        key={ext}
+                        type="button"
+                        className={`ccn-fmt-btn${cur === ext ? ' ccn-fmt-btn--active' : ''}`}
+                        onClick={() => setData('output_format', ext)}
+                      >
+                        {ext.slice(1).toUpperCase()}
+                      </button>
+                    )
+                  })}
+                </div>
+                <div className="ccn-hint-sm">
+                  Each file is converted to {((cfg.output_format as string) || '.csv').slice(1).toUpperCase()} in the target folder
+                </div>
               </div>
             )}
 
@@ -278,7 +327,7 @@ export function ConnectorNodeConfig({ data, onUpdate, mode }: Props) {
                 {(cfg.add_timestamp === 'true' || cfg.add_timestamp === true) && (
                   <div className="ccn-hint-sm">
                     {(cfg.write_per_source === 'true' || cfg.write_per_source === true)
-                      ? 'e.g. original_YYYYMMDD_HHMMSS.csv'
+                      ? `e.g. original_YYYYMMDD_HHMMSS${(cfg.output_format as string) || '.csv'}`
                       : (() => {
                           const obj = (cfg.object as string) || ''
                           if (!obj) return 'e.g. output_YYYYMMDD_HHMMSS.csv'

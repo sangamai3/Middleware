@@ -28,6 +28,7 @@ const PALETTE: { group: string; items: PaletteItem[] }[] = [
   {
     group: 'Transform',
     items: [
+      { stepType: 'transform_format', label: 'Format Convert', family: 'transform' },
       { stepType: 'transform_map', label: 'Map Fields', family: 'transform' },
       { stepType: 'transform_filter', label: 'Filter', family: 'transform' },
       { stepType: 'transform_sql', label: 'SQL', family: 'transform' },

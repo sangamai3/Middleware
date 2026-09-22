@@ -1,27 +1,32 @@
-/* Design tokens */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* ── Design tokens ─────────────────────────────────── */
 :root {
-  --bg: #0D1117;
-  --surface: #161B22;
-  --surface-2: #1C2430;
-  --border: #30363D;
-  --border-subtle: #21262D;
-  --text: #E6EDF3;
-  --text-muted: #7D8590;
-  --accent: #58A6FF;
-  --accent-hover: #79B8FF;
-  --pass: #3FB950;
-  --fail: #F85149;
-  --warn: #D29922;
-  --node-trigger: #388BFD;
-  --node-connector: #56D364;
-  --node-transform: #D2A8FF;
-  --node-control: #FFA657;
-  --node-utility: #79C0FF;
-  --sidebar-width: 240px;
+  --bg: #070D1C;
+  --surface: #0D1829;
+  --surface-2: #152035;
+  --surface-3: #1C2D47;
+  --border: #1A2D4A;
+  --border-strong: #253F68;
+  --text: #E1E8F5;
+  --text-muted: #8A9EC0;
+  --text-dim: #556082;
+  --accent: #5B7FFF;
+  --accent-hover: #7A9BFF;
+  --accent-dim: rgba(91, 127, 255, 0.12);
+  --pass: #10B981;
+  --fail: #EF4444;
+  --warn: #F59E0B;
+  --node-trigger: #6366F1;
+  --node-connector: #10B981;
+  --node-transform: #A78BFA;
+  --node-control: #F59E0B;
+  --node-utility: #38BDF8;
+  --sidebar-width: 220px;
   --panel-width: 320px;
-  --header-height: 48px;
-  --radius: 6px;
-  --radius-sm: 4px;
+  --header-height: 56px;
+  --radius: 8px;
+  --radius-sm: 6px;
   /* aliases used by older component CSS */
   --color-accent: var(--accent);
   --color-bg: var(--bg);
@@ -33,15 +38,18 @@
 
 @media (prefers-color-scheme: light) {
   :root:not([data-theme="dark"]) {
-    --bg: #F6F8FA;
+    --bg: #EEF2FF;
     --surface: #FFFFFF;
-    --surface-2: #F0F3F6;
-    --border: #D0D7DE;
-    --border-subtle: #E8ECF0;
-    --text: #1F2328;
-    --text-muted: #636C76;
-    --accent: #0969DA;
-    --accent-hover: #0757BA;
+    --surface-2: #F4F6FF;
+    --surface-3: #E8EDFF;
+    --border: #CDD6F8;
+    --border-strong: #ADBDF0;
+    --text: #0F1729;
+    --text-muted: #475681;
+    --text-dim: #6675AA;
+    --accent: #3D5FE0;
+    --accent-hover: #2D4DC8;
+    --accent-dim: rgba(61, 95, 224, 0.1);
   }
 }
 
@@ -50,7 +58,7 @@
 html, body, #root {
   height: 100%;
   overflow: hidden;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
   font-size: 13px;
   background: var(--bg);
   color: var(--text);
@@ -84,7 +92,7 @@ input:focus, select:focus, textarea:focus {
 /* Scrollbar */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
 /* React Flow overrides */
@@ -102,6 +110,6 @@ input:focus, select:focus, textarea:focus {
   color: var(--text) !important;
   fill: var(--text) !important;
 }
-.react-flow__edge-path { stroke: var(--border); }
+.react-flow__edge-path { stroke: var(--border-strong); }
 .react-flow__edge.selected .react-flow__edge-path,
 .react-flow__edge:hover .react-flow__edge-path { stroke: var(--accent); }

@@ -11,6 +11,7 @@ export const nodeTypes: NodeTypes = {
   connector_read: BaseNode,
   connector_write: BaseNode,
   // Transforms
+  transform_format: BaseNode,
   transform_map: BaseNode,
   transform_filter: BaseNode,
   transform_sql: BaseNode,

@@ -111,6 +111,97 @@
   word-break: break-word;
 }
 
+/* Configured connector badge */
+.base-node__conn-badge {
+  flex-shrink: 0;
+  font-size: 9px;
+  font-weight: 800;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  letter-spacing: 0.04em;
+  color: #fff;
+  padding: 3px 6px;
+  border-radius: 4px;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.base-node__conn-badge--sm {
+  font-size: 8px;
+  padding: 2px 4px;
+}
+
+.base-node__conn-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.base-node__conn-name {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.base-node__conn-obj {
+  font-size: 10px;
+  color: var(--text-dim);
+  font-family: 'JetBrains Mono', monospace;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Ready indicator */
+.base-node__ready {
+  font-size: 8px;
+  color: var(--pass);
+  flex-shrink: 0;
+}
+
+/* Click-to-configure / finish-setup prompt bar */
+.base-node__prompt {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px 4px 14px;
+  font-size: 10px;
+  color: var(--text-dim);
+  border-top: 1px solid var(--border);
+  background: var(--surface-2);
+  font-style: italic;
+}
+
+.base-node__prompt--partial {
+  color: var(--warn);
+  font-style: normal;
+  background: color-mix(in srgb, var(--warn) 6%, var(--surface-2));
+}
+
+/* Unconfigured state: dashed border */
+.base-node--unconfigured {
+  border-style: dashed;
+  opacity: 0.85;
+}
+
+/* Format Convert: two badges with arrow between them */
+.base-node__fmt-convert {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.base-node__fmt-arrow {
+  font-size: 10px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
 /* React Flow handle overrides */
 .base-node .react-flow__handle {
   width: 8px;

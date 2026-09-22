@@ -2,6 +2,113 @@ import { useCanvasStore } from '@/store/canvasStore'
 import type { CanvasNodeData } from '@/types'
 import { ConnectorNodeConfig } from './ConnectorNodeConfig'
 import './ConfigPanel.css'
+import './ConnectorNodeConfig.css'
+
+const FORMAT_EXTS = ['.csv', '.json', '.parquet', '.xlsx'] as const
+const FORMAT_COLORS: Record<string, string> = {
+  '.csv':     '#10B981',
+  '.json':    '#F59E0B',
+  '.parquet': '#8B5CF6',
+  '.xlsx':    '#3B82F6',
+}
+
+function FormatConvertConfig({
+  data,
+  onUpdate,
+}: {
+  data: CanvasNodeData
+  onUpdate: (patch: Partial<CanvasNodeData>) => void
+}) {
+  const cfg = (data.config as Record<string, unknown>) ?? {}
+  const setData = (key: string, value: unknown) =>
+    onUpdate({ config: { ...cfg, [key]: value } })
+
+  const inFmt  = ((cfg.input_format  as string) || '').replace(/^\./, '')
+  const outFmt = ((cfg.output_format as string) || '').replace(/^\./, '')
+
+  return (
+    <div className="ccn" style={{ marginTop: 8 }}>
+      <div className="ccn-section-title">Input Format</div>
+      <div className="ccn-fmt-row">
+        {FORMAT_EXTS.map((ext) => {
+          const label = ext.slice(1).toUpperCase()
+          const active = inFmt === ext.slice(1)
+          return (
+            <button
+              key={ext}
+              type="button"
+              className={`ccn-fmt-btn${active ? ' ccn-fmt-btn--active' : ''}`}
+              style={active ? { background: `${FORMAT_COLORS[ext]}22`, borderColor: FORMAT_COLORS[ext], color: FORMAT_COLORS[ext] } : {}}
+              onClick={() => setData('input_format', ext.slice(1))}
+            >
+              {label}
+            </button>
+          )
+        })}
+      </div>
+
+      <div className="ccn-section-title" style={{ marginTop: 10 }}>Output Format</div>
+      <div className="ccn-fmt-row">
+        {FORMAT_EXTS.map((ext) => {
+          const label = ext.slice(1).toUpperCase()
+          const active = outFmt === ext.slice(1)
+          return (
+            <button
+              key={ext}
+              type="button"
+              className={`ccn-fmt-btn${active ? ' ccn-fmt-btn--active' : ''}`}
+              style={active ? { background: `${FORMAT_COLORS[ext]}22`, borderColor: FORMAT_COLORS[ext], color: FORMAT_COLORS[ext] } : {}}
+              onClick={() => setData('output_format', ext.slice(1))}
+            >
+              {label}
+            </button>
+          )
+        })}
+      </div>
+
+      {outFmt === 'json' && (
+        <div className="config-field" style={{ marginTop: 10 }}>
+          <label className="config-label">JSON orient</label>
+          <select
+            value={(cfg.json_orient as string) || 'records'}
+            onChange={(e) => setData('json_orient', e.target.value)}
+          >
+            <option value="records">records (array of objects)</option>
+            <option value="split">split (columns + data)</option>
+            <option value="values">values (array of arrays)</option>
+            <option value="index">index (keyed by row index)</option>
+          </select>
+        </div>
+      )}
+
+      {outFmt === 'parquet' && (
+        <div className="config-field" style={{ marginTop: 10 }}>
+          <label className="config-label">Parquet compression</label>
+          <select
+            value={(cfg.parquet_compression as string) || 'snappy'}
+            onChange={(e) => setData('parquet_compression', e.target.value)}
+          >
+            <option value="snappy">snappy</option>
+            <option value="gzip">gzip</option>
+            <option value="brotli">brotli</option>
+            <option value="none">none</option>
+          </select>
+        </div>
+      )}
+
+      {inFmt && outFmt && inFmt !== outFmt && (
+        <div style={{ marginTop: 10, padding: '6px 10px', borderRadius: 6, background: 'var(--surface-2)', border: '1px solid var(--border)', fontSize: 11, color: 'var(--text-muted)' }}>
+          DataFrame passes through unchanged — the Target connector writes as <strong style={{ color: 'var(--text)' }}>.{outFmt}</strong>
+        </div>
+      )}
+      {inFmt && outFmt && inFmt === outFmt && (
+        <div style={{ marginTop: 10, padding: '6px 10px', borderRadius: 6, background: 'var(--surface-2)', border: '1px solid var(--warn)', fontSize: 11, color: 'var(--warn)' }}>
+          Input and output format are the same — no conversion will occur
+        </div>
+      )}
+    </div>
+  )
+}
 
 // Auto-generated config form based on step type
 function StepConfigForm({
@@ -33,6 +140,10 @@ function StepConfigForm({
 
       {data.stepType === 'connector_write' && (
         <ConnectorNodeConfig data={data} onUpdate={onUpdate} mode="target" />
+      )}
+
+      {data.stepType === 'transform_format' && (
+        <FormatConvertConfig data={data} onUpdate={onUpdate} />
       )}
 
       {data.stepType === 'transform_filter' && (

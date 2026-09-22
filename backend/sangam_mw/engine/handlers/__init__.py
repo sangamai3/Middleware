@@ -3,6 +3,7 @@
 from .base import StepHandler
 from .connector import ConnectorReadHandler, ConnectorWriteHandler
 from .transform import TransformMapHandler, TransformFilterHandler, TransformSQLHandler, TransformScriptHandler
+from .transform_format import TransformFormatHandler
 from .control import RouterHandler, SetVariableHandler, LoggerHandler
 
 __all__ = [
@@ -13,6 +14,7 @@ __all__ = [
     "TransformFilterHandler",
     "TransformSQLHandler",
     "TransformScriptHandler",
+    "TransformFormatHandler",
     "RouterHandler",
     "SetVariableHandler",
     "LoggerHandler",

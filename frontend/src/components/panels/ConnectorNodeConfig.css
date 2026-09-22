@@ -250,6 +250,52 @@
 }
 .ccn-path-edit:hover { color: var(--accent); background: var(--surface-3); }
 
+/* Format quick-pick buttons */
+.ccn-fmt-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+
+.ccn-fmt-row--block {
+  margin-top: 0;
+}
+
+.ccn-fmt-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.ccn-fmt-btn {
+  padding: 3px 9px;
+  font-size: 11px;
+  font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface-2);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.1s;
+  letter-spacing: 0.04em;
+}
+
+.ccn-fmt-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-dim);
+}
+
+.ccn-fmt-btn--active {
+  background: var(--accent-dim);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
 .ccn-checkbox-row { padding: 2px 0; }
 .ccn-checkbox-label {
   display: flex;
