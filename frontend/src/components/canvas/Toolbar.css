@@ -1,0 +1,83 @@
+.toolbar {
+  height: var(--header-height);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-inline: 16px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  gap: 12px;
+}
+
+.toolbar__left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.toolbar__flow-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.toolbar__dirty {
+  color: var(--warn);
+  font-size: 10px;
+  flex-shrink: 0;
+}
+
+.toolbar__center {
+  flex: 1;
+  text-align: center;
+}
+
+.toolbar__status {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.toolbar__right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.toolbar__btn {
+  padding: 5px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 500;
+  transition: background 0.1s, color 0.1s;
+}
+.toolbar__btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.toolbar__btn--ghost {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+.toolbar__btn--ghost:hover:not(:disabled) {
+  background: var(--border);
+}
+
+.toolbar__btn--run {
+  background: var(--pass);
+  color: #000;
+  font-weight: 600;
+  min-width: 88px;
+}
+.toolbar__btn--run:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--pass) 85%, #fff);
+}
+.toolbar__btn--running {
+  background: var(--warn);
+  cursor: not-allowed;
+}

@@ -1,0 +1,107 @@
+/* Design tokens */
+:root {
+  --bg: #0D1117;
+  --surface: #161B22;
+  --surface-2: #1C2430;
+  --border: #30363D;
+  --border-subtle: #21262D;
+  --text: #E6EDF3;
+  --text-muted: #7D8590;
+  --accent: #58A6FF;
+  --accent-hover: #79B8FF;
+  --pass: #3FB950;
+  --fail: #F85149;
+  --warn: #D29922;
+  --node-trigger: #388BFD;
+  --node-connector: #56D364;
+  --node-transform: #D2A8FF;
+  --node-control: #FFA657;
+  --node-utility: #79C0FF;
+  --sidebar-width: 240px;
+  --panel-width: 320px;
+  --header-height: 48px;
+  --radius: 6px;
+  --radius-sm: 4px;
+  /* aliases used by older component CSS */
+  --color-accent: var(--accent);
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-border: var(--border);
+  --color-muted: var(--text-muted);
+  --color-text: var(--text);
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg: #F6F8FA;
+    --surface: #FFFFFF;
+    --surface-2: #F0F3F6;
+    --border: #D0D7DE;
+    --border-subtle: #E8ECF0;
+    --text: #1F2328;
+    --text-muted: #636C76;
+    --accent: #0969DA;
+    --accent-hover: #0757BA;
+  }
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body, #root {
+  height: 100%;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  font-size: 13px;
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+
+button {
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  border: none;
+  background: none;
+  color: inherit;
+}
+
+input, select, textarea {
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--text);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 6px 10px;
+  outline: none;
+  width: 100%;
+}
+input:focus, select:focus, textarea:focus {
+  border-color: var(--accent);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+/* React Flow overrides */
+.react-flow__background { background: var(--bg); }
+.react-flow__minimap { background: var(--surface) !important; border: 1px solid var(--border); border-radius: var(--radius); }
+.react-flow__controls { background: var(--surface) !important; border: 1px solid var(--border) !important; border-radius: var(--radius); }
+.react-flow__controls button {
+  background: var(--surface) !important;
+  border-bottom: 1px solid var(--border) !important;
+  color: var(--text-muted) !important;
+  fill: var(--text-muted) !important;
+}
+.react-flow__controls button:hover {
+  background: var(--surface-2) !important;
+  color: var(--text) !important;
+  fill: var(--text) !important;
+}
+.react-flow__edge-path { stroke: var(--border); }
+.react-flow__edge.selected .react-flow__edge-path,
+.react-flow__edge:hover .react-flow__edge-path { stroke: var(--accent); }

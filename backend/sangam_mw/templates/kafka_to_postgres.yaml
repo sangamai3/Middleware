@@ -1,0 +1,55 @@
+id: kafka_to_postgres
+name: Kafka → PostgreSQL Ingest
+description: >
+  Consume messages from a Kafka topic and write them to a PostgreSQL table.
+  Supports JSON message format with configurable upsert key.
+category: streaming
+tags: [kafka, postgres, streaming, cdc]
+author: Sangam AI
+version: "1.0.0"
+connections:
+  - id: kafka_conn
+    connector: kafka
+    label: Source Kafka Cluster
+  - id: pg_conn
+    connector: postgres
+    label: Target PostgreSQL
+parameters:
+  - name: topic
+    type: string
+    description: Kafka topic to consume
+    required: true
+  - name: target_table
+    type: string
+    description: PostgreSQL table to write to
+    required: true
+  - name: upsert_key
+    type: string
+    description: Primary key column for upsert
+    default: id
+  - name: batch_messages
+    type: integer
+    default: 500
+definition:
+  flow_id: kafka_to_postgres
+  name: "{{name}}"
+  trigger:
+    type: schedule
+    cron: "* * * * *"
+  steps:
+    - step_id: consume_kafka
+      type: source
+      connector_id: "{{kafka_conn}}"
+      config:
+        object: "{{topic}}"
+        limit: "{{batch_messages}}"
+        value_format: json
+        offset: latest
+    - step_id: write_pg
+      type: sink
+      depends_on: [consume_kafka]
+      connector_id: "{{pg_conn}}"
+      config:
+        object: "{{target_table}}"
+        mode: upsert
+        upsert_key: "{{upsert_key}}"

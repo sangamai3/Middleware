@@ -1,0 +1,57 @@
+.dashboard { padding: 24px; max-width: 1100px; margin: 0 auto; }
+.dashboard__header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 24px; }
+.dashboard__title { font-size: 20px; font-weight: 600; }
+.dashboard__sub { font-size: 13px; color: var(--color-muted); margin-top: 3px; display: flex; align-items: center; gap: 8px; }
+
+.role-chip { font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 3px; text-transform: uppercase; letter-spacing: .04em; }
+.role-chip--admin { background: rgba(239,68,68,.1); color: #ef4444; }
+.role-chip--developer { background: rgba(37,99,235,.1); color: var(--color-accent); }
+.role-chip--operator { background: rgba(234,179,8,.1); color: #ca8a04; }
+.role-chip--viewer { background: var(--color-surface); color: var(--color-muted); border: 1px solid var(--color-border); }
+
+.stat-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 24px; }
+.stat-tile { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 6px; padding: 16px; }
+.stat-tile--accent { border-color: var(--color-accent); }
+.stat-tile__value { font-size: 26px; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--color-accent); line-height: 1; }
+.stat-tile__label { font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--color-muted); margin-top: 5px; }
+.stat-tile__sub { font-size: 11px; color: var(--color-muted); margin-top: 3px; }
+
+.dashboard__panels { display: grid; grid-template-columns: 1fr 340px; gap: 16px; }
+.dash-panel { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 6px; padding: 16px; }
+.dash-panel__head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.dash-panel__title { font-size: 13px; font-weight: 600; }
+
+.dash-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.dash-table th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--color-muted); padding: 0 10px 8px 0; border-bottom: 1px solid var(--color-border); }
+.dash-table td { padding: 8px 10px 8px 0; border-bottom: 1px solid var(--color-border); }
+.dash-table tr:last-child td { border-bottom: none; }
+.dash-table__row { cursor: pointer; }
+.dash-table__row:hover td { background: var(--color-bg); }
+.dash-table__name { font-weight: 500; }
+.dash-table__id { font-family: var(--font-mono, monospace); font-size: 11px; color: var(--color-muted); }
+
+.status-pill { font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 3px; text-transform: uppercase; letter-spacing: .04em; }
+.status-pill--deployed { background: rgba(22,163,74,.1); color: #16a34a; }
+.status-pill--draft { background: var(--color-bg); color: var(--color-muted); border: 1px solid var(--color-border); }
+.status-pill--failed { background: rgba(239,68,68,.1); color: #ef4444; }
+.status-pill--paused { background: rgba(234,179,8,.1); color: #ca8a04; }
+
+.quick-actions { display: flex; flex-direction: column; gap: 2px; }
+.quick-action { display: flex; align-items: center; gap: 12px; background: none; border: none; cursor: pointer; padding: 10px 8px; border-radius: 5px; text-align: left; color: var(--color-text); width: 100%; transition: background .12s; }
+.quick-action:hover { background: var(--color-bg); }
+.quick-action__icon { font-size: 18px; flex-shrink: 0; }
+.quick-action__label { font-size: 13px; font-weight: 500; }
+.quick-action__desc { font-size: 12px; color: var(--color-muted); }
+
+.empty-state { padding: 24px; text-align: center; }
+.empty-state__label { color: var(--color-muted); font-size: 13px; margin-bottom: 8px; }
+
+.btn { padding: 8px 16px; border-radius: 5px; font-size: 13px; font-weight: 500; border: none; cursor: pointer; }
+.btn--primary { background: var(--color-accent); color: #fff; }
+.link-btn { background: none; border: none; cursor: pointer; font-size: 13px; color: var(--color-accent); padding: 0; }
+.link-btn:hover { text-decoration: underline; }
+
+@media (max-width: 700px) {
+  .stat-grid { grid-template-columns: repeat(2, 1fr); }
+  .dashboard__panels { grid-template-columns: 1fr; }
+}

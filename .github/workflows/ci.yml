@@ -1,0 +1,102 @@
+name: CI
+
+on:
+  push:
+    branches: [main, "feature/**", "fix/**"]
+  pull_request:
+    branches: [main]
+
+env:
+  PYTHON_VERSION: "3.11"
+  DATABASE_URL: "postgresql+asyncpg://sangam:sangam@localhost:5432/sangam_test"
+  FERNET_KEY: "ZmDfcTF7_60GrrY167zsiPd67pEvs0aGOv2oasOM1Pg="
+  JWT_SECRET: "ci-test-secret-do-not-use-in-production"
+
+jobs:
+  lint:
+    name: Lint & Format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+      - name: Install lint tools
+        run: pip install ruff mypy
+      - name: ruff check
+        run: ruff check backend/
+      - name: ruff format check
+        run: ruff format --check backend/
+      - name: mypy
+        run: mypy backend/sangam_mw/ --ignore-missing-imports --no-strict-optional
+        continue-on-error: true
+
+  test-unit:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+      - name: Install dependencies
+        run: pip install -e ".[dev]"
+      - name: Run unit tests
+        run: pytest tests/unit/ -v --tb=short --cov=sangam_mw --cov-report=xml --cov-report=term-missing
+      - name: Upload coverage
+        uses: codecov/codecov-action@v4
+        with:
+          file: backend/coverage.xml
+        continue-on-error: true
+
+  test-integration:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: sangam
+          POSTGRES_PASSWORD: sangam
+          POSTGRES_DB: sangam_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+      - name: Install dependencies
+        run: pip install -e ".[dev]"
+      - name: Run migrations
+        run: alembic upgrade head
+      - name: Run integration tests
+        run: pytest tests/integration/ -v --tb=short -m "not slow"
+        env:
+          DATABASE_URL: ${{ env.DATABASE_URL }}
+
+  docker-build:
+    name: Docker Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build backend image
+        run: docker build -t sangam-mw:ci -f backend/Dockerfile backend/
+      - name: Run container smoke test
+        run: |
+          docker run --rm -e FERNET_KEY=${{ env.FERNET_KEY }} \
+            -e JWT_SECRET=${{ env.JWT_SECRET }} \
+            sangam-mw:ci python -c "from sangam_mw.api.main import app; print('OK')"

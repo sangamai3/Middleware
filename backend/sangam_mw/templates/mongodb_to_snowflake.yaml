@@ -1,0 +1,54 @@
+id: mongodb_to_snowflake
+name: MongoDB → Snowflake Export
+description: >
+  Export MongoDB collection documents to a Snowflake table.
+  Supports full-refresh and incremental modes with a configurable
+  filter and field projection.
+category: data-pipeline
+tags: [mongodb, snowflake, export, nosql]
+author: Sangam AI
+version: "1.0.0"
+connections:
+  - id: mongo_conn
+    connector: mongodb
+    label: Source MongoDB
+  - id: sf_conn
+    connector: snowflake
+    label: Target Snowflake
+parameters:
+  - name: collection
+    type: string
+    description: MongoDB collection name
+    required: true
+  - name: snowflake_table
+    type: string
+    description: Snowflake destination table (e.g. MYDB.PUBLIC.ORDERS)
+    required: true
+  - name: mode
+    type: string
+    enum: [append, replace]
+    default: append
+  - name: filter_json
+    type: string
+    description: Optional MongoDB filter e.g. {"status":"active"}
+    default: "{}"
+definition:
+  flow_id: mongodb_to_snowflake
+  name: "{{name}}"
+  trigger:
+    type: schedule
+    cron: "0 2 * * *"
+  steps:
+    - step_id: read_mongo
+      type: source
+      connector_id: "{{mongo_conn}}"
+      config:
+        object: "{{collection}}"
+        filter: "{{filter_json}}"
+    - step_id: write_sf
+      type: sink
+      depends_on: [read_mongo]
+      connector_id: "{{sf_conn}}"
+      config:
+        object: "{{snowflake_table}}"
+        mode: "{{mode}}"

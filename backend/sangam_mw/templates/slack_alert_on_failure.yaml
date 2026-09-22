@@ -1,0 +1,40 @@
+id: slack_alert_on_failure
+name: Slack Alert on Flow Failure
+description: >
+  Send a Slack message whenever a monitored data pipeline fails.
+  Reads recent failed runs from the SangamMW execution log and posts
+  a formatted alert with run ID, flow name, and error message.
+category: alerting
+tags: [slack, alerting, monitoring, devops]
+author: Sangam AI
+version: "1.0.0"
+connections:
+  - id: slack_conn
+    connector: slack
+    label: Slack Workspace
+parameters:
+  - name: slack_channel
+    type: string
+    description: Slack channel to post alerts to (e.g. #data-alerts)
+    default: "#data-alerts"
+  - name: monitored_flow_id
+    type: string
+    description: Flow ID to monitor (leave empty for all flows)
+    default: ""
+definition:
+  flow_id: slack_alert_on_failure
+  name: "{{name}}"
+  trigger:
+    type: schedule
+    cron: "*/5 * * * *"
+  steps:
+    - step_id: post_alert
+      type: sink
+      connector_id: "{{slack_conn}}"
+      config:
+        object: "{{slack_channel}}"
+        message_template: >
+          :red_circle: *Flow Failure Alert*
+          Flow: `{flow_id}` | Run: `{run_id}`
+          Error: {error_message}
+          Started: {started_at}

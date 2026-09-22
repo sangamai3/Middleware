@@ -1,0 +1,53 @@
+.app-header {
+  height: var(--header-height);
+  display: flex;
+  align-items: center;
+  padding-inline: 16px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  gap: 24px;
+  flex-shrink: 0;
+}
+
+.app-header__brand-link { display: flex; align-items: center; gap: 8px; text-decoration: none; }
+
+.app-header__user { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+.user-avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--color-accent, #2563eb); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; }
+.user-info { display: flex; flex-direction: column; line-height: 1.2; }
+.user-email { font-size: 12px; font-weight: 500; color: var(--text); }
+.user-role-badge { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+.logout-btn { background: none; border: none; cursor: pointer; font-size: 14px; color: var(--text-muted, #6b7280); padding: 4px 6px; border-radius: 4px; transition: background .12s; }
+.logout-btn:hover { background: var(--surface-2); }
+
+.app-header__brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.app-header__logo {
+  font-size: 16px;
+}
+
+.app-header__name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+
+.app-header__nav {
+  display: flex;
+  gap: 4px;
+}
+
+.nav-link {
+  padding: 5px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: background 0.1s, color 0.1s;
+}
+.nav-link:hover { background: var(--surface-2); color: var(--text); }
+.nav-link--active { background: var(--accent-dim, var(--surface-2)); color: var(--accent); }

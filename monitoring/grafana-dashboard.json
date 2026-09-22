@@ -1,0 +1,73 @@
+{
+  "__inputs": [{ "name": "DS_PROMETHEUS", "label": "Prometheus", "type": "datasource", "pluginId": "prometheus" }],
+  "__requires": [{ "type": "datasource", "id": "prometheus", "name": "Prometheus", "version": "1.0.0" }],
+  "title": "SangamMW Platform",
+  "uid": "sangam-mw-overview",
+  "schemaVersion": 38,
+  "version": 1,
+  "refresh": "30s",
+  "time": { "from": "now-1h", "to": "now" },
+  "timepicker": {},
+  "tags": ["sangam-mw", "integrations", "ipaas"],
+  "panels": [
+    {
+      "id": 1, "gridPos": { "h": 4, "w": 4, "x": 0, "y": 0 },
+      "type": "stat", "title": "Total Runs (1h)",
+      "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "thresholds": { "steps": [{"color": "green", "value": null}] } } },
+      "targets": [{ "datasource": "${DS_PROMETHEUS}", "expr": "sum(increase(sangam_mw_runs_total[1h]))", "legendFormat": "runs" }]
+    },
+    {
+      "id": 2, "gridPos": { "h": 4, "w": 4, "x": 4, "y": 0 },
+      "type": "stat", "title": "Error Rate",
+      "fieldConfig": { "defaults": { "unit": "percentunit", "color": { "mode": "thresholds" }, "thresholds": { "steps": [{"color": "green", "value": null}, {"color": "yellow", "value": 0.02}, {"color": "red", "value": 0.05}] } } },
+      "targets": [{ "datasource": "${DS_PROMETHEUS}", "expr": "rate(sangam_mw_runs_total{status='FAILED'}[5m]) / rate(sangam_mw_runs_total[5m])", "legendFormat": "error rate" }]
+    },
+    {
+      "id": 3, "gridPos": { "h": 4, "w": 4, "x": 8, "y": 0 },
+      "type": "stat", "title": "Rows Processed (1h)",
+      "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "thresholds": { "steps": [{"color": "blue", "value": null}] } } },
+      "targets": [{ "datasource": "${DS_PROMETHEUS}", "expr": "sum(increase(sangam_mw_rows_processed_total[1h]))", "legendFormat": "rows" }]
+    },
+    {
+      "id": 4, "gridPos": { "h": 4, "w": 4, "x": 12, "y": 0 },
+      "type": "stat", "title": "P99 Run Duration",
+      "fieldConfig": { "defaults": { "unit": "s", "color": { "mode": "thresholds" }, "thresholds": { "steps": [{"color": "green", "value": null}, {"color": "yellow", "value": 60}, {"color": "red", "value": 300}] } } },
+      "targets": [{ "datasource": "${DS_PROMETHEUS}", "expr": "histogram_quantile(0.99, rate(sangam_mw_run_duration_seconds_bucket[10m]))", "legendFormat": "p99" }]
+    },
+    {
+      "id": 10, "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 },
+      "type": "timeseries", "title": "Runs / min by Status",
+      "fieldConfig": { "defaults": { "unit": "reqps" } },
+      "targets": [
+        { "datasource": "${DS_PROMETHEUS}", "expr": "sum by (status) (rate(sangam_mw_runs_total[1m]))", "legendFormat": "{{status}}" }
+      ]
+    },
+    {
+      "id": 11, "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 },
+      "type": "timeseries", "title": "Run Duration Percentiles",
+      "fieldConfig": { "defaults": { "unit": "s" } },
+      "targets": [
+        { "datasource": "${DS_PROMETHEUS}", "expr": "histogram_quantile(0.50, rate(sangam_mw_run_duration_seconds_bucket[5m]))", "legendFormat": "p50" },
+        { "datasource": "${DS_PROMETHEUS}", "expr": "histogram_quantile(0.95, rate(sangam_mw_run_duration_seconds_bucket[5m]))", "legendFormat": "p95" },
+        { "datasource": "${DS_PROMETHEUS}", "expr": "histogram_quantile(0.99, rate(sangam_mw_run_duration_seconds_bucket[5m]))", "legendFormat": "p99" }
+      ]
+    },
+    {
+      "id": 20, "gridPos": { "h": 8, "w": 12, "x": 0, "y": 12 },
+      "type": "timeseries", "title": "Rows Processed / Failed",
+      "fieldConfig": { "defaults": { "unit": "short" } },
+      "targets": [
+        { "datasource": "${DS_PROMETHEUS}", "expr": "sum(rate(sangam_mw_rows_processed_total[1m]))", "legendFormat": "processed/s" },
+        { "datasource": "${DS_PROMETHEUS}", "expr": "sum(rate(sangam_mw_rows_failed_total[1m]))", "legendFormat": "failed/s" }
+      ]
+    },
+    {
+      "id": 21, "gridPos": { "h": 8, "w": 12, "x": 12, "y": 12 },
+      "type": "timeseries", "title": "Connector Operation Latency (P95)",
+      "fieldConfig": { "defaults": { "unit": "s" } },
+      "targets": [
+        { "datasource": "${DS_PROMETHEUS}", "expr": "histogram_quantile(0.95, sum by (connector_id, le) (rate(sangam_mw_connector_duration_seconds_bucket[5m])))", "legendFormat": "{{connector_id}}" }
+      ]
+    }
+  ]
+}

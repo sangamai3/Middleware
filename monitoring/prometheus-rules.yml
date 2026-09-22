@@ -1,0 +1,97 @@
+groups:
+  - name: sangam_mw_sla
+    interval: 60s
+    rules:
+
+      # Flow execution error rate > 5% over 5 minutes
+      - alert: HighFlowErrorRate
+        expr: |
+          rate(sangam_mw_runs_total{status="FAILED"}[5m])
+          / rate(sangam_mw_runs_total[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+          service: sangam-mw
+        annotations:
+          summary: "Flow error rate > 5% for flow {{ $labels.flow_id }}"
+          description: "Error rate is {{ $value | humanizePercentage }} over last 5 minutes"
+
+      # P99 run duration > 10 minutes
+      - alert: SlowFlowExecution
+        expr: |
+          histogram_quantile(0.99,
+            rate(sangam_mw_run_duration_seconds_bucket[10m])
+          ) > 600
+        for: 10m
+        labels:
+          severity: warning
+          service: sangam-mw
+        annotations:
+          summary: "P99 flow duration > 10 min for {{ $labels.flow_id }}"
+          description: "P99 duration is {{ $value | humanizeDuration }}"
+
+      # Row count drops > 20% vs 7-day average (anomaly detection)
+      - alert: RowCountAnomaly
+        expr: |
+          rate(sangam_mw_rows_processed_total[1h])
+          < 0.8 * avg_over_time(rate(sangam_mw_rows_processed_total[1h])[7d:1h])
+        for: 30m
+        labels:
+          severity: warning
+          service: sangam-mw
+        annotations:
+          summary: "Row count dropped >20% vs 7-day average for {{ $labels.flow_id }}/{{ $labels.step_id }}"
+          description: "Current rate: {{ $value }}"
+
+      # No flow runs in 1 hour (dead scheduler)
+      - alert: NoFlowRuns
+        expr: |
+          absent(rate(sangam_mw_runs_total[1h]))
+        for: 1h
+        labels:
+          severity: critical
+          service: sangam-mw
+        annotations:
+          summary: "No flow runs recorded in the last hour"
+          description: "Scheduler may be down or no flows are scheduled"
+
+      # High failed rows rate per step
+      - alert: HighRowFailureRate
+        expr: |
+          rate(sangam_mw_rows_failed_total[5m])
+          / (rate(sangam_mw_rows_processed_total[5m]) + 1) > 0.10
+        for: 5m
+        labels:
+          severity: warning
+          service: sangam-mw
+        annotations:
+          summary: "Row failure rate > 10% for {{ $labels.flow_id }}/{{ $labels.step_id }}"
+
+      # Connector latency > 30s P95
+      - alert: SlowConnector
+        expr: |
+          histogram_quantile(0.95,
+            rate(sangam_mw_connector_duration_seconds_bucket[10m])
+          ) > 30
+        for: 10m
+        labels:
+          severity: warning
+          service: sangam-mw
+        annotations:
+          summary: "Connector {{ $labels.connector_id }} P95 latency > 30s"
+
+  - name: sangam_mw_api_gateway
+    interval: 30s
+    rules:
+
+      # Gateway error rate > 10%
+      - alert: GatewayHighErrorRate
+        expr: |
+          sum(rate(sangam_mw_runs_total{status=~"5.."}[5m]))
+          / sum(rate(sangam_mw_runs_total[5m])) > 0.10
+        for: 5m
+        labels:
+          severity: critical
+          service: sangam-mw-gateway
+        annotations:
+          summary: "API gateway error rate > 10%"

@@ -1,0 +1,54 @@
+id: postgres_to_bigquery
+name: PostgreSQL → BigQuery Sync
+description: >
+  Incrementally sync a PostgreSQL table to a BigQuery dataset.
+  Reads rows updated since the last run using a watermark column,
+  then appends them to the target BigQuery table.
+category: data-pipeline
+tags: [postgres, bigquery, sync, incremental]
+author: Sangam AI
+version: "1.0.0"
+connections:
+  - id: source_pg
+    connector: postgres
+    label: Source PostgreSQL
+  - id: dest_bq
+    connector: bigquery
+    label: Destination BigQuery
+parameters:
+  - name: source_table
+    type: string
+    description: PostgreSQL table to sync (e.g. public.orders)
+    required: true
+  - name: dest_table
+    type: string
+    description: BigQuery destination (e.g. dataset.orders)
+    required: true
+  - name: watermark_column
+    type: string
+    description: Timestamp column for incremental reads
+    default: updated_at
+  - name: batch_size
+    type: integer
+    default: 10000
+definition:
+  flow_id: postgres_to_bigquery
+  name: "{{name}}"
+  trigger:
+    type: schedule
+    cron: "0 * * * *"
+  steps:
+    - step_id: read_pg
+      type: source
+      connector_id: "{{source_pg}}"
+      config:
+        object: "{{source_table}}"
+        filter: "{{watermark_column}} > '{{ last_run_at | default('1970-01-01') }}'"
+        limit: "{{batch_size}}"
+    - step_id: write_bq
+      type: sink
+      depends_on: [read_pg]
+      connector_id: "{{dest_bq}}"
+      config:
+        object: "{{dest_table}}"
+        mode: append

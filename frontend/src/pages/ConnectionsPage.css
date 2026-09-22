@@ -1,0 +1,93 @@
+.connections-page {
+  padding: 28px 32px;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.connections-page__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.connections-page__title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.connections-page__empty { color: var(--text-muted); font-size: 13px; padding: 32px 0; }
+
+.connections-page__toast {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+.connections-page__toast--ok {
+  background: color-mix(in srgb, var(--pass) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--pass) 40%, transparent);
+  color: var(--pass);
+}
+.connections-page__toast--fail {
+  background: color-mix(in srgb, var(--fail) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--fail) 40%, transparent);
+  color: var(--fail);
+}
+.connections-page__toast-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: inherit;
+  font-size: 12px;
+  opacity: 0.7;
+  padding: 0 4px;
+}
+
+.connections-group { margin-bottom: 28px; }
+.connections-group__label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-muted);
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+.connections-group__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+}
+
+.connector-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.connector-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+.connector-card__badges { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; justify-content: flex-end; }
+.connector-card__name { font-size: 14px; font-weight: 600; color: var(--text); }
+.connector-card__type { font-size: 11px; color: var(--text-muted); }
+.connector-card__desc { font-size: 12px; color: var(--text-muted); }
+.connector-card__health-msg { font-size: 11px; color: var(--fail); margin-top: 2px; }
+.connector-card__footer { margin-top: 4px; }
+.connector-card__test { font-size: 12px; padding: 4px 10px; }
+
+.health-badge { font-size: 10px; }
+.connections-page__header-right { display: flex; align-items: center; gap: 10px; }
+.health-summary { font-size: 12px; font-weight: 500; padding: 4px 10px; border-radius: 12px; background: var(--surface); border: 1px solid var(--border); }
+.health-summary--ok { color: var(--pass); border-color: color-mix(in srgb, var(--pass) 30%, transparent); }
+.health-summary--warn { color: var(--warn); border-color: color-mix(in srgb, var(--warn) 30%, transparent); }

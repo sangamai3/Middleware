@@ -1,0 +1,124 @@
+.base-node {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  min-width: 180px;
+  max-width: 220px;
+  cursor: default;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  overflow: hidden;
+}
+.base-node--selected {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 30%, transparent);
+}
+.base-node--running {
+  border-color: var(--warn);
+  animation: pulse-border 1s ease-in-out infinite;
+}
+.base-node--failed { border-color: var(--fail); }
+.base-node--success { border-color: var(--pass); }
+
+@keyframes pulse-border {
+  0%, 100% { box-shadow: 0 0 0 0 transparent; }
+  50% { box-shadow: 0 0 0 3px color-mix(in srgb, var(--warn) 30%, transparent); }
+}
+
+.base-node__accent {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 3px;
+  height: 100%;
+  background: var(--node-color);
+  border-radius: var(--radius) 0 0 var(--radius);
+}
+
+.base-node__inner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 10px 9px 14px;
+}
+
+.base-node__icon {
+  font-size: 14px;
+  flex-shrink: 0;
+  color: var(--node-color);
+  width: 18px;
+  text-align: center;
+  font-family: monospace;
+}
+
+.base-node__text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.base-node__label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.base-node__type {
+  font-size: 10px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.base-node__status {
+  font-size: 12px;
+  flex-shrink: 0;
+  font-weight: 700;
+}
+.base-node__status--running { color: var(--warn); animation: spin 1s linear infinite; }
+.base-node__status--success { color: var(--pass); }
+.base-node__status--failed { color: var(--fail); }
+.base-node__status--retrying { color: var(--warn); }
+.base-node__status--skipped { color: var(--text-muted); }
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.base-node__rows {
+  padding: 2px 10px 4px 14px;
+  font-size: 10px;
+  color: var(--pass);
+  font-variant-numeric: tabular-nums;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.base-node__error {
+  padding: 4px 10px;
+  font-size: 10px;
+  color: var(--fail);
+  background: color-mix(in srgb, var(--fail) 10%, transparent);
+  border-top: 1px solid var(--border-subtle);
+  word-break: break-word;
+}
+
+/* React Flow handle overrides */
+.base-node .react-flow__handle {
+  width: 8px;
+  height: 8px;
+  background: var(--border);
+  border: 2px solid var(--surface);
+}
+.base-node .react-flow__handle:hover,
+.base-node--selected .react-flow__handle {
+  background: var(--accent);
+}

@@ -1,0 +1,190 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sangam-mw
+  namespace: sangam
+  labels:
+    app: sangam-mw
+    component: backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: sangam-mw
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: sangam-mw
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8000"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: sangam-mw
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+      containers:
+        - name: backend
+          image: sangam-mw:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8000
+              name: http
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: sangam-mw-secrets
+                  key: database-url
+            - name: FERNET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: sangam-mw-secrets
+                  key: fernet-key
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: sangam-mw-secrets
+                  key: jwt-secret
+            - name: LOG_LEVEL
+              valueFrom:
+                configMapKeyRef:
+                  name: sangam-mw-config
+                  key: log-level
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "1000m"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            failureThreshold: 3
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+      initContainers:
+        - name: migrate
+          image: sangam-mw:latest
+          command: ["alembic", "upgrade", "head"]
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: sangam-mw-secrets
+                  key: database-url
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sangam-mw
+  namespace: sangam
+  labels:
+    app: sangam-mw
+spec:
+  selector:
+    app: sangam-mw
+  ports:
+    - port: 80
+      targetPort: 8000
+      name: http
+  type: ClusterIP
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: sangam-mw
+  namespace: sangam
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sangam-mw-config
+  namespace: sangam
+data:
+  log-level: "info"
+  workers: "2"
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: sangam-mw
+  namespace: sangam
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: api.sangammw.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: sangam-mw
+                port:
+                  name: http
+  tls:
+    - hosts:
+        - api.sangammw.example.com
+      secretName: sangam-mw-tls
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: sangam-mw
+  namespace: sangam
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: sangam-mw
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: sangam-mw
+  namespace: sangam
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: sangam-mw
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80

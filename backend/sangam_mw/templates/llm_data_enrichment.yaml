@@ -1,0 +1,67 @@
+id: llm_data_enrichment
+name: LLM Data Enrichment Pipeline
+description: >
+  Read rows from a database table, send each row through an LLM
+  (OpenAI or Anthropic) using a prompt template, and write the
+  enriched results back to a destination table.
+  Ideal for classification, summarisation, and entity extraction.
+category: ai
+tags: [llm, openai, anthropic, enrichment, classification]
+author: Sangam AI
+version: "1.0.0"
+connections:
+  - id: source_conn
+    connector: postgres
+    label: Source Database
+  - id: llm_conn
+    connector: openai
+    label: LLM Provider (OpenAI or Anthropic)
+  - id: dest_conn
+    connector: postgres
+    label: Destination Database
+parameters:
+  - name: source_table
+    type: string
+    description: Table to enrich
+    required: true
+  - name: dest_table
+    type: string
+    description: Destination table for enriched rows
+    required: true
+  - name: prompt_template
+    type: string
+    description: "Prompt with {column} placeholders, e.g. 'Classify this text: {body}'"
+    required: true
+  - name: llm_model
+    type: string
+    default: gpt-4o-mini
+  - name: batch_size
+    type: integer
+    default: 100
+definition:
+  flow_id: llm_data_enrichment
+  name: "{{name}}"
+  trigger:
+    type: manual
+  steps:
+    - step_id: read_source
+      type: source
+      connector_id: "{{source_conn}}"
+      config:
+        object: "{{source_table}}"
+        limit: "{{batch_size}}"
+    - step_id: enrich_llm
+      type: source
+      depends_on: [read_source]
+      connector_id: "{{llm_conn}}"
+      config:
+        object: chat
+        model: "{{llm_model}}"
+        prompt_template: "{{prompt_template}}"
+    - step_id: write_dest
+      type: sink
+      depends_on: [enrich_llm]
+      connector_id: "{{dest_conn}}"
+      config:
+        object: "{{dest_table}}"
+        mode: upsert
