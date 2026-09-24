@@ -29,12 +29,15 @@ export interface JSONSchemaProperty {
 export interface ObjectSchema {
   name: string
   kind: string
+  description?: string
 }
 
 export interface ColumnSchema {
   name: string
   data_type: string
   nullable?: boolean
+  is_primary_key?: boolean
+  description?: string
 }
 
 // ─── Connection ─────────────────────────────────────────────────────
@@ -85,6 +88,8 @@ export type StepStatus = 'pending' | 'running' | 'success' | 'failed' | 'retryin
 export interface StepExecution {
   step_id: string
   step_type: string
+  step_label?: string
+  connector_id?: string | null
   status: StepStatus
   started_at: string | null
   ended_at: string | null
@@ -100,6 +105,7 @@ export interface StepExecution {
 export interface ExecutionRun {
   run_id: string
   flow_id: string
+  flow_name?: string
   trigger_type: string
   status: RunStatus
   started_at: string | null

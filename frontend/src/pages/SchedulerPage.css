@@ -1,4 +1,4 @@
-.scheduler { padding: 24px; max-width: 1100px; margin: 0 auto; }
+.scheduler { padding: 24px; max-width: 960px; margin: 0 auto; }
 .scheduler__header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 20px; }
 .scheduler__title { font-size: 20px; font-weight: 600; }
 .scheduler__sub { font-size: 13px; color: var(--color-muted); margin-top: 4px; }
@@ -52,3 +52,4 @@
 .cj-preview__expr { font-family: monospace; font-size: 13px; background: var(--color-bg); border: 1px solid var(--color-border); padding: 3px 8px; border-radius: 4px; }
 .cj-error { background: rgba(239,68,68,.08); border: 1px solid rgba(239,68,68,.3); color: #ef4444; font-size: 12px; padding: 8px 12px; border-radius: 4px; }
 .cj-actions { display: flex; justify-content: flex-end; gap: 8px; padding-top: 6px; border-top: 1px solid var(--color-border); }
+.cj-flow-readonly { padding: 6px 0; }

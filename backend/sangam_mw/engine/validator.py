@@ -20,6 +20,7 @@ from ..transforms import validate_sql, validate_python, validate_yaml_fields
 _KNOWN_STEP_TYPES = {
     "connector_read",
     "connector_write",
+    "transform_format",
     "transform_map",
     "transform_filter",
     "transform_sql",
@@ -36,6 +37,10 @@ _KNOWN_STEP_TYPES = {
     "sync_endpoint",
     "global_exception",
     "component_exception",
+    "scheduler",
+    "webhook_trigger",
+    "event_trigger",
+    "streaming_trigger",
 }
 
 
@@ -68,6 +73,15 @@ class FlowValidator:
         if step.type not in _KNOWN_STEP_TYPES:
             warnings.append(f"Step '{step.id}' uses unknown type '{step.type}'")
 
+        if step.type == "scheduler":
+            cron = step.config.get("cron") or step.config.get("cron_expr")
+            interval = step.config.get("interval_seconds")
+            if not cron and not interval:
+                warnings.append(
+                    f"Step '{step.id}' (scheduler) has no cron or interval_seconds — "
+                    "manual runs work; set a schedule in the step config for timed runs"
+                )
+
         if step.type == "transform_sql":
             sql = step.config.get("sql")
             if not sql:
@@ -93,6 +107,20 @@ class FlowValidator:
                 raise FlowValidationError(
                     f"Step '{step.id}' Python validation failed: {exc}"
                 ) from exc
+
+        elif step.type in ("connector_read", "connector_write"):
+            connector_id = step.config.get("connector_id")
+            if connector_id == "file":
+                obj = str(step.config.get("object") or "").strip()
+                write_per_source = str(step.config.get("write_per_source", "false")).lower() == "true"
+                if step.type == "connector_read" and not obj:
+                    warnings.append(
+                        f"Step '{step.id}' file source has no pattern — '*.csv' will be used at runtime"
+                    )
+                elif step.type == "connector_write" and not write_per_source and not obj:
+                    warnings.append(
+                        f"Step '{step.id}' file target has no output name — 'output.csv' will be used at runtime"
+                    )
 
         elif step.type == "transform_map":
             fields = step.config.get("fields")

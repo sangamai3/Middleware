@@ -25,6 +25,8 @@ class StepStatus(StrEnum):
 class StepExecution(BaseModel):
     step_id: str
     step_type: str
+    step_label: str = ""
+    connector_id: str | None = None
     status: StepStatus = StepStatus.PENDING
     started_at: datetime | None = None
     ended_at: datetime | None = None
@@ -40,6 +42,7 @@ class StepExecution(BaseModel):
 class ExecutionRun(BaseModel):
     run_id: str
     flow_id: str
+    flow_name: str = ""
     trigger_type: str = "manual"
     status: RunStatus = RunStatus.PENDING
     started_at: datetime | None = None

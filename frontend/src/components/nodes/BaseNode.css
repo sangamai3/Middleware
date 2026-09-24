@@ -7,7 +7,7 @@
   max-width: 220px;
   cursor: default;
   transition: border-color 0.15s, box-shadow 0.15s;
-  overflow: hidden;
+  overflow: visible;
 }
 .base-node--selected {
   border-color: var(--accent);
@@ -40,6 +40,8 @@
   align-items: center;
   gap: 8px;
   padding: 9px 10px 9px 14px;
+  border-radius: inherit;
+  overflow: hidden;
 }
 
 .base-node__icon {
@@ -202,14 +204,68 @@
   flex-shrink: 0;
 }
 
-/* React Flow handle overrides */
-.base-node .react-flow__handle {
-  width: 8px;
-  height: 8px;
-  background: var(--border);
-  border: 2px solid var(--surface);
+/* Connection ports — large hit target, visible ring */
+.base-node .flow-handle {
+  width: 14px;
+  height: 14px;
+  min-width: 14px;
+  min-height: 14px;
+  background: var(--surface);
+  border: 2px solid var(--node-color, var(--accent));
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--node-color, var(--accent)) 25%, transparent);
+  transition: transform 0.12s ease, background 0.12s ease, box-shadow 0.12s ease;
+  z-index: 10;
 }
-.base-node .react-flow__handle:hover,
-.base-node--selected .react-flow__handle {
+
+.base-node .flow-handle--target {
+  left: -9px;
+}
+
+.base-node .flow-handle--source {
+  right: -9px;
+}
+
+.base-node .flow-handle:hover,
+.base-node .flow-handle.connectingfrom,
+.base-node .flow-handle.connectingto,
+.base-node--selected .flow-handle {
+  transform: scale(1.15);
   background: var(--accent);
+  border-color: var(--surface);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 35%, transparent);
+}
+
+.base-node .flow-handle::before {
+  content: '';
+  position: absolute;
+  inset: -12px;
+  border-radius: 50%;
+}
+
+.flow-port-label {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.85;
+}
+
+.flow-port-label--in {
+  left: 6px;
+}
+
+.flow-port-label--out {
+  right: 6px;
+}
+
+.base-node:hover .flow-port-label,
+.base-node--selected .flow-port-label {
+  color: var(--accent);
+  opacity: 1;
 }

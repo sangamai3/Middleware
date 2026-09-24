@@ -5,6 +5,21 @@
   overflow: hidden;
 }
 
+/* Edges: easier to select and follow */
+.flow-canvas .react-flow__edge-path {
+  stroke-linecap: round;
+}
+
+.flow-canvas .react-flow__edge:hover .react-flow__edge-path,
+.flow-canvas .react-flow__edge.selected .react-flow__edge-path {
+  stroke: var(--accent) !important;
+  stroke-width: 2.5px !important;
+}
+
+.flow-canvas .react-flow__connection-path {
+  stroke-linecap: round;
+}
+
 .flow-canvas__empty {
   position: absolute;
   inset: 0;

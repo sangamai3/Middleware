@@ -1,3 +1,9 @@
+.toolbar-wrap {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+}
+
 .toolbar {
   height: var(--header-height);
   display: flex;
@@ -29,6 +35,18 @@
 .toolbar__dirty {
   color: var(--warn);
   font-size: 10px;
+  flex-shrink: 0;
+}
+
+.toolbar__deployed-pill {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--pass) 14%, transparent);
+  color: var(--pass);
   flex-shrink: 0;
 }
 
@@ -68,6 +86,16 @@
   background: var(--border);
 }
 
+.toolbar__btn--deploy {
+  background: var(--accent-dim);
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+  color: var(--accent);
+  font-weight: 600;
+}
+.toolbar__btn--deploy:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
 .toolbar__btn--run {
   background: var(--pass);
   color: #000;
@@ -80,4 +108,65 @@
 .toolbar__btn--running {
   background: var(--warn);
   cursor: not-allowed;
+}
+
+.toolbar__warnings-link {
+  margin-left: 10px;
+  font-size: 11px;
+  color: var(--warn);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-decoration: underline;
+  font-family: inherit;
+}
+
+.toolbar-validation {
+  border-bottom: 1px solid var(--border);
+  padding: 10px 16px 12px;
+  font-size: 12px;
+  line-height: 1.45;
+}
+.toolbar-validation--warn {
+  background: color-mix(in srgb, var(--warn) 10%, var(--surface));
+  border-bottom-color: color-mix(in srgb, var(--warn) 35%, var(--border));
+}
+.toolbar-validation--error {
+  background: color-mix(in srgb, var(--fail) 10%, var(--surface));
+  border-bottom-color: color-mix(in srgb, var(--fail) 35%, var(--border));
+}
+.toolbar-validation__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+.toolbar-validation__title {
+  font-weight: 600;
+  color: var(--text);
+}
+.toolbar-validation__close {
+  background: none;
+  border: none;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--text-muted);
+  padding: 0 4px;
+}
+.toolbar-validation__error {
+  margin: 0 0 8px;
+  color: var(--fail);
+}
+.toolbar-validation__list {
+  margin: 0;
+  padding-left: 1.2rem;
+  color: var(--text);
+}
+.toolbar-validation__list li { margin-bottom: 4px; }
+.toolbar-validation__hint {
+  margin: 8px 0 0;
+  font-size: 11px;
+  color: var(--text-muted);
 }

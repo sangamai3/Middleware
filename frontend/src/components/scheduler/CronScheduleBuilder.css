@@ -1,0 +1,169 @@
+.cron-builder {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+}
+
+.cron-builder__patterns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.cron-builder__pattern {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  padding: 5px 10px;
+  font-size: 12px;
+  cursor: pointer;
+  color: var(--color-muted);
+}
+
+.cron-builder__pattern--active {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: #fff;
+}
+
+.cron-builder__row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cron-builder__row--inline {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.cron-builder__row > label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-muted);
+  font-weight: 500;
+  min-width: 72px;
+}
+
+.cron-builder__num {
+  width: 72px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  padding: 6px 8px;
+  font-size: 13px;
+  color: var(--color-text);
+}
+
+.cron-builder__num--time {
+  width: 56px;
+  text-align: center;
+}
+
+.cron-builder__select {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  padding: 6px 10px;
+  font-size: 13px;
+  color: var(--color-text);
+}
+
+.cron-builder__days {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.cron-builder__day {
+  min-width: 40px;
+  padding: 6px 4px;
+  font-size: 11px;
+  font-weight: 600;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background: var(--color-surface);
+  color: var(--color-muted);
+  cursor: pointer;
+}
+
+.cron-builder__day--on {
+  background: rgba(var(--color-accent-rgb, 59, 130, 246), 0.15);
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.cron-builder__time {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.cron-builder__time-field {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.cron-builder__time-label {
+  font-size: 10px;
+  color: var(--color-muted);
+}
+
+.cron-builder__time-sep {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-muted);
+  padding-bottom: 6px;
+}
+
+.cron-builder__input {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  padding: 7px 10px;
+  font-size: 13px;
+  color: var(--color-text);
+  width: 100%;
+}
+
+.cron-builder__input--mono {
+  font-family: ui-monospace, monospace;
+}
+
+.cron-builder__hint {
+  font-size: 11px;
+  color: var(--color-muted);
+  line-height: 1.4;
+}
+
+.cron-builder__preview {
+  border-top: 1px solid var(--color-border);
+  padding-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cron-builder__summary {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.cron-builder__expr {
+  font-family: ui-monospace, monospace;
+  font-size: 12px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  padding: 4px 8px;
+  border-radius: 4px;
+  align-self: flex-start;
+}

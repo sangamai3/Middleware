@@ -1,112 +1,103 @@
-.flows-page {
-  padding: 28px 32px;
-  max-width: 1100px;
-  margin: 0 auto;
+.flows-page__toolbar-wrap {
+  padding: 16px 20px 0;
 }
 
-.flows-page__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 24px;
+.flows-page__chip-count {
+  margin-left: 6px;
+  opacity: 0.7;
+  font-variant-numeric: tabular-nums;
 }
 
-.flows-page__title {
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--text);
-}
-
-.flows-page__create-row {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 16px;
-  max-width: 480px;
-}
-.flows-page__create-row input { flex: 1; }
-
-.flows-page__empty {
+.flows-page__loading {
+  padding: 48px;
+  text-align: center;
   color: var(--text-muted);
-  padding: 32px 0;
   font-size: 13px;
 }
 
-/* Table */
-.flows-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 13px;
-}
-.flows-table th {
-  text-align: left;
-  padding: 8px 12px;
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
-  color: var(--text-muted);
-  border-bottom: 1px solid var(--border);
-  font-weight: 600;
-}
-.flows-table__row {
-  cursor: pointer;
-  border-bottom: 1px solid var(--border-subtle);
-}
-.flows-table__row:hover td { background: var(--surface-2); }
-.flows-table td {
-  padding: 12px 12px;
-}
-.flows-table__name { font-weight: 600; color: var(--text); }
-.flows-table__id {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
-  color: var(--text-muted);
-}
-
-.flows-table__ts {
+.flows-table__date {
   font-size: 12px;
   color: var(--text-muted);
   white-space: nowrap;
 }
 
+.flows-table__actions-col {
+  width: 88px;
+  text-align: right;
+}
+
 .flows-table__delete {
-  color: var(--text-muted);
-  padding: 3px 7px;
-  border-radius: var(--radius-sm);
-  font-size: 11px;
-}
-.flows-table__delete:hover { background: color-mix(in srgb, var(--fail) 15%, transparent); color: var(--fail); }
-
-/* Shared badges */
-.badge {
-  display: inline-flex;
-  padding: 2px 8px;
-  border-radius: 10px;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
-}
-.badge--pass { background: color-mix(in srgb, var(--pass) 15%, transparent); color: var(--pass); }
-.badge--fail { background: color-mix(in srgb, var(--fail) 15%, transparent); color: var(--fail); }
-.badge--warn { background: color-mix(in srgb, var(--warn) 15%, transparent); color: var(--warn); }
-.badge--muted { background: var(--surface-2); color: var(--text-muted); border: 1px solid var(--border); }
-
-/* Shared buttons */
-.btn {
-  padding: 6px 14px;
-  border-radius: var(--radius-sm);
-  font-size: 13px;
-  font-weight: 500;
+  color: var(--text-muted);
+  background: none;
+  border: none;
   cursor: pointer;
-  transition: background 0.1s;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
 }
-.btn--primary {
-  background: var(--accent);
-  color: #fff;
+
+.flows-table__delete:hover {
+  color: var(--fail);
+  background: color-mix(in srgb, var(--fail) 10%, transparent);
 }
-.btn--primary:hover { background: var(--accent-hover); }
-.btn--primary:disabled { opacity: 0.4; cursor: not-allowed; }
-.btn--ghost {
-  background: var(--surface-2);
+
+.flows-create-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.flows-create-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(29, 45, 62, 0.45);
+}
+
+.flows-create-modal__panel {
+  position: relative;
+  width: 100%;
+  max-width: 440px;
+  background: var(--surface);
   border: 1px solid var(--border);
-  color: var(--text);
+  border-radius: var(--radius);
+  padding: 24px;
+  box-shadow: var(--shadow-md);
 }
-.btn--ghost:hover { background: var(--border); }
+
+.flows-create-modal__title {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.flows-create-modal__sub {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 6px;
+  margin-bottom: 16px;
+}
+
+.flows-create-modal__input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  margin-bottom: 20px;
+}
+
+.flows-create-modal__input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-dim);
+}
+
+.flows-create-modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}

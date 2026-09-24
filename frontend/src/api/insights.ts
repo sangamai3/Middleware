@@ -97,6 +97,8 @@ export interface BusinessEventResult {
 export interface StepDetail {
   step_id: string
   step_type: string
+  step_label?: string
+  connector_id?: string | null
   status: string
   duration_ms: number | null
   rows_in: number

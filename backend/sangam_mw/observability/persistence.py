@@ -68,6 +68,8 @@ async def persist_run(
                     run_id=run.run_id,
                     step_id=step.step_id,
                     step_type=step.step_type,
+                    step_label=step.step_label or "",
+                    connector_id=step.connector_id,
                     status=str(step.status.value if hasattr(step.status, "value") else step.status),
                     started_at=step.started_at if isinstance(step.started_at, datetime) else (
                         datetime.fromtimestamp(step.started_at, tz=UTC) if step.started_at else None

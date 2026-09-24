@@ -406,6 +406,19 @@ def deploy(
 env_app = typer.Typer(help="Environment management commands", no_args_is_help=True)
 app.add_typer(env_app, name="env")
 
+db_app = typer.Typer(help="Database commands", no_args_is_help=True)
+app.add_typer(db_app, name="db")
+
+
+@db_app.command("ensure")
+def db_ensure(
+    no_migrate: bool = typer.Option(False, "--no-migrate", help="Only check or start Postgres"),
+) -> None:
+    """Ensure Postgres is up (Docker auto-start when configured) and run migrations."""
+    from sangam_mw.dev.db_bootstrap import ensure_database
+
+    ensure_database(migrate=not no_migrate)
+
 
 @env_app.command("list")
 def env_list(
@@ -453,6 +466,29 @@ def env_resolve(
         console.print(f"[cyan]{alias}[/cyan] → [green]{conn_id}[/green] (env: {target_env})")
     else:
         console.print(f"[yellow]Alias '{alias}' not mapped in env '{target_env}'[/yellow]")
+
+
+worker_app = typer.Typer(help="Flow worker runtime", no_args_is_help=True)
+app.add_typer(worker_app, name="worker")
+
+
+@worker_app.command("run")
+def worker_run(
+    flow_id: str = typer.Option("", envvar="FLOW_ID", help="Flow to execute"),
+    control_plane_url: str = typer.Option("", envvar="CONTROL_PLANE_URL"),
+) -> None:
+    """Run a single flow in worker mode (used inside per-flow Docker containers)."""
+    if not flow_id:
+        console.print("[red]Error:[/red] Set FLOW_ID or pass --flow-id")
+        raise typer.Exit(1)
+    console.print(
+        f"[cyan]Flow worker[/cyan] flow_id={flow_id} "
+        f"control_plane={control_plane_url or '(pack/local)'}"
+    )
+    console.print(
+        "[yellow]Worker loop not fully wired yet — use control plane Run/Scheduler "
+        "or complete worker pull in a follow-up.[/yellow]"
+    )
 
 
 if __name__ == "__main__":

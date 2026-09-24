@@ -11,3 +11,8 @@
   min-height: 0;
   overflow: hidden;
 }
+
+/* Canvas + side panels shrink when run results drawer is open */
+.designer {
+  min-height: 0;
+}

@@ -83,7 +83,10 @@ class FlowScheduler:
 
     def _build_trigger(self, trigger_config: dict[str, Any]) -> Any:
         if "cron" in trigger_config:
-            return CronTrigger.from_crontab(trigger_config["cron"])
+            from .cron_expr import cron_trigger_from_expr
+
+            tz = trigger_config.get("timezone")
+            return cron_trigger_from_expr(trigger_config["cron"], timezone=tz)
         if "interval_seconds" in trigger_config:
             return IntervalTrigger(seconds=int(trigger_config["interval_seconds"]))
         raise ValueError(f"Unknown trigger config: {trigger_config}")

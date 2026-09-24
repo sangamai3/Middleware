@@ -5,10 +5,16 @@ import { clearToken } from '@/api/client'
 import './AppHeader.css'
 
 const ROLE_COLORS: Record<string, string> = {
-  admin: '#EF4444',
-  developer: '#5B7FFF',
-  operator: '#F59E0B',
-  viewer: '#64748B',
+  admin: '#FF8A8A',
+  developer: '#7CC4FF',
+  operator: '#F5C842',
+  viewer: '#A9B4BE',
+}
+
+function toggleTheme() {
+  const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'
+  document.documentElement.dataset.theme = next
+  localStorage.setItem('sangam_mw.theme', next)
 }
 
 function NavItem({ to, icon, label }: { to: string; icon: React.ReactNode; label: string }) {
@@ -40,7 +46,10 @@ export function AppHeader() {
       <div className="sidebar-brand">
         <NavLink to="/dashboard" className="sidebar-brand__link">
           <div className="sidebar-brand__mark">S</div>
-          <span className="sidebar-brand__name">SangamMW</span>
+          <div>
+            <span className="sidebar-brand__name">SangamMW</span>
+            <span className="sidebar-brand__tag">Integration Cloud</span>
+          </div>
         </NavLink>
       </div>
 
@@ -165,6 +174,9 @@ export function AppHeader() {
       {/* User footer */}
       {isAuthenticated() && user && (
         <div className="sidebar-footer">
+          <button type="button" className="sidebar-theme" onClick={toggleTheme}>
+            Toggle light / dark theme
+          </button>
           <div className="sidebar-user">
             <div className="sidebar-avatar" title={user.email}>
               {user.email[0].toUpperCase()}

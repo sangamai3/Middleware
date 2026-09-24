@@ -30,7 +30,7 @@ export const schedulerApi = {
   createJob: (body: CreateJob) => api.post<ScheduledJob>('/scheduler/jobs', body),
   getJob: (flowId: string) => api.get<ScheduledJob>(`/scheduler/jobs/${flowId}`),
   updateJob: (flowId: string, body: Partial<CreateJob>) =>
-    api.put<ScheduledJob>(`/scheduler/jobs/${flowId}`, body),
+    api.patch<ScheduledJob>(`/scheduler/jobs/${flowId}`, body),
   deleteJob: (flowId: string) => api.delete<void>(`/scheduler/jobs/${flowId}`),
   triggerJob: (flowId: string) =>
     api.post<{ flow_id: string; triggered_at: string; status: string }>(

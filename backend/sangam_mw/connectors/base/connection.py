@@ -100,14 +100,14 @@ class ConnectionManager:
                 await self._refresh_oauth_if_needed(connector, handle)
                 return handle
             decrypted = self.decrypt_config(raw_config, connector.metadata.connection_schema)
-            validate_config(
+            config = validate_config(
                 decrypted, connector.metadata.connection_schema, label="connection config"
             )
-            expires_at = parse_token_expiry(decrypted.get("token_expires_at"))
+            expires_at = parse_token_expiry(config.get("token_expires_at"))
             handle = ConnectionHandle(
                 connector_id=connector.metadata.connector_id,
                 connection_id=connection_id,
-                config=decrypted,
+                config=config,
                 created_at=datetime.now(UTC),
                 token_expires_at=expires_at,
             )

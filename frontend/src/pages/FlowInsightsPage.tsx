@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { insightsApi, RunHistoryItem, StepDetail } from '@/api/insights'
+import { stepTimelineTitle } from '@/lib/stepDisplay'
 import './FlowInsightsPage.css'
 
 const TIME_RANGES = [
@@ -36,7 +37,9 @@ function Waterfall({ steps }: { steps: StepDetail[] }) {
         const cls = s.status === 'success' ? 'fi-bar--ok' : s.status === 'failed' ? 'fi-bar--fail' : 'fi-bar--run'
         return (
           <div key={s.step_id} className="fi-waterfall__row">
-            <span className="fi-waterfall__label">{s.step_id}</span>
+            <span className="fi-waterfall__label" title={s.step_id}>
+              {s.step_label?.trim() || stepTimelineTitle(s as import('@/types').StepExecution)}
+            </span>
             <div className="fi-waterfall__track">
               <div className={`fi-waterfall__bar ${cls}`} style={{ width: `${pct}%` }} />
             </div>

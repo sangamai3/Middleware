@@ -16,6 +16,7 @@ class ExecutionContext:
     run_id: str
     flow_id: str
     correlation_id: str | None = None
+    preview_mode: bool = False
     variables: dict[str, Any] = field(default_factory=dict)
     _outputs: dict[str, pd.DataFrame] = field(default_factory=dict)
     _meta: dict[str, Any] = field(default_factory=dict)

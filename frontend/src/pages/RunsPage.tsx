@@ -3,6 +3,7 @@ import { useQuery, useMutation } from '@tanstack/react-query'
 import { runsApi } from '@/api/flows'
 import { api } from '@/api/client'
 import type { ExecutionRun, StepExecution } from '@/types'
+import { stepTimelineTitle } from '@/lib/stepDisplay'
 import './RunsPage.css'
 
 type RunSummary = { run_id: string; flow_id: string; status: string; started_at: string }
@@ -41,9 +42,13 @@ function StepWaterfall({ steps }: { steps: StepExecution[] }) {
           : 0
         const left = (sOff / total) * 100
         const width = Math.max((dur / total) * 100, 0.5)
+        const title = stepTimelineTitle(s)
         return (
           <div key={s.step_id} className="waterfall__row">
-            <div className="waterfall__label">{s.step_id}</div>
+            <div className="waterfall__label" title={s.step_id}>
+              <span className="waterfall__label-title">{title}</span>
+              <span className="waterfall__label-id">{s.step_id}</span>
+            </div>
             <div className="waterfall__track">
               <div
                 className={`waterfall__bar waterfall__bar--${s.status}`}
@@ -122,7 +127,10 @@ function RunDetail({ runId }: { runId: string }) {
         <div>
           <div className="run-detail__id">{run.run_id}</div>
           <div className="run-detail__meta">
-            Flow: <b>{run.flow_id}</b>
+            Flow: <b>{run.flow_name?.trim() || run.flow_id}</b>
+            {run.flow_name?.trim() && run.flow_id !== run.flow_name && (
+              <span className="run-detail__flow-id"> ({run.flow_id})</span>
+            )}
             &nbsp;·&nbsp;Trigger: {run.trigger_type}
             {run.triggered_by && <>&nbsp;·&nbsp;{run.triggered_by}</>}
           </div>

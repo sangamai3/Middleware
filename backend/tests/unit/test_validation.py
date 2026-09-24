@@ -12,6 +12,15 @@ def test_valid_file_connection_config() -> None:
     validate_config({"base_path": "/tmp"}, schema)
 
 
+def test_string_boolean_coerced_for_file_connector() -> None:
+    schema = FileConnector().metadata.connection_schema
+    normalized = validate_config(
+        {"base_path": "/tmp", "create_if_not_exists": "true"},
+        schema,
+    )
+    assert normalized["create_if_not_exists"] is True
+
+
 def test_missing_required_field() -> None:
     schema = FileConnector().metadata.connection_schema
     with pytest.raises(ConnectorValidationError, match="base_path"):

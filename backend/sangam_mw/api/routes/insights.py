@@ -477,6 +477,8 @@ async def get_run_detail(
             {
                 "step_id": s.step_id,
                 "step_type": s.step_type,
+                "step_label": s.step_label or "",
+                "connector_id": s.connector_id,
                 "status": s.status,
                 "duration_ms": s.duration_ms,
                 "rows_in": s.rows_in,

@@ -4,8 +4,10 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
 from ...connectors.base.errors import ConnectorValidationError
+from ...connectors.base.metadata import OperationType
 from ...connectors.base.registry import registry
-from ...connectors.base.schemas import ConnectionHandle
+from ...connectors.base.schemas import ConnectionHandle, ReadConfig
+from ...engine.preview import dataframe_to_preview
 from ...connectors.base.validation import validate_config
 from ..auth import get_current_user
 
@@ -19,6 +21,12 @@ class TestConnectionRequest(BaseModel):
 class IntrospectColumnsRequest(BaseModel):
     config: dict
     object_name: str
+
+
+class SampleDataRequest(BaseModel):
+    config: dict
+    object_name: str
+    limit: int = 25
 
 
 @router.get("/")
@@ -74,7 +82,7 @@ async def test_connection(
     except KeyError:
         raise HTTPException(404, f"Connector '{connector_id}' not found")
     try:
-        validate_config(
+        config = validate_config(
             body.config, connector.metadata.connection_schema, label="connection config"
         )
     except ConnectorValidationError as exc:
@@ -82,7 +90,7 @@ async def test_connection(
     handle = ConnectionHandle(
         connector_id=connector_id,
         connection_id="test",
-        config=body.config,
+        config=config,
         created_at=datetime.now(UTC),
     )
     try:
@@ -103,7 +111,7 @@ async def introspect_objects(
     except KeyError:
         raise HTTPException(404, f"Connector '{connector_id}' not found")
     try:
-        validate_config(
+        config = validate_config(
             body.config, connector.metadata.connection_schema, label="connection config"
         )
     except ConnectorValidationError as exc:
@@ -111,7 +119,7 @@ async def introspect_objects(
     handle = ConnectionHandle(
         connector_id=connector_id,
         connection_id="introspect",
-        config=body.config,
+        config=config,
         created_at=datetime.now(UTC),
     )
     objects = connector.introspect_objects(handle)
@@ -129,7 +137,7 @@ async def introspect_columns(
     except KeyError:
         raise HTTPException(404, f"Connector '{connector_id}' not found")
     try:
-        validate_config(
+        config = validate_config(
             body.config, connector.metadata.connection_schema, label="connection config"
         )
     except ConnectorValidationError as exc:
@@ -137,7 +145,7 @@ async def introspect_columns(
     handle = ConnectionHandle(
         connector_id=connector_id,
         connection_id="introspect",
-        config=body.config,
+        config=config,
         created_at=datetime.now(UTC),
     )
     cols = connector.introspect_columns(handle, body.object_name)
@@ -151,6 +159,39 @@ async def introspect_columns(
         }
         for c in cols
     ]
+
+
+@router.post("/{connector_id}/sample")
+async def sample_data(
+    connector_id: str,
+    body: SampleDataRequest,
+    _: dict = Depends(get_current_user),
+) -> dict:
+    """Read up to ``limit`` rows from a source object for wizard / connection preview."""
+    try:
+        connector = registry.get(connector_id)
+    except KeyError:
+        raise HTTPException(404, f"Connector '{connector_id}' not found")
+    if OperationType.READ not in connector.metadata.operations:
+        raise HTTPException(400, f"Connector '{connector_id}' does not support read preview")
+    try:
+        config = validate_config(
+            body.config, connector.metadata.connection_schema, label="connection config"
+        )
+    except ConnectorValidationError as exc:
+        raise HTTPException(422, str(exc)) from exc
+    handle = ConnectionHandle(
+        connector_id=connector_id,
+        connection_id="preview",
+        config=config,
+        created_at=datetime.now(UTC),
+    )
+    limit = max(1, min(body.limit, 500))
+    try:
+        df = connector.sample(handle, body.object_name, limit=limit)
+    except Exception as exc:
+        raise HTTPException(422, str(exc)) from exc
+    return dataframe_to_preview(df, limit=limit)
 
 
 @router.get("/health")

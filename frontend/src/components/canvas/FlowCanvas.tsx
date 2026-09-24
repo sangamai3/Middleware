@@ -5,9 +5,11 @@ import {
   Controls,
   MiniMap,
   BackgroundVariant,
+  ConnectionLineType,
+  ConnectionMode,
   useReactFlow,
 } from '@xyflow/react'
-import type { Node } from '@xyflow/react'
+import type { Connection, Edge, Node } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 import { useCanvasStore } from '@/store/canvasStore'
 import { nodeTypes } from '../nodes/nodeTypes'
@@ -24,6 +26,7 @@ function makeNodeId() {
 const FAMILY_FOR_TYPE: Record<string, NodeFamily> = {
   scheduler: 'trigger', webhook_trigger: 'trigger', streaming_trigger: 'trigger', event_trigger: 'trigger',
   connector_read: 'connector', connector_write: 'connector',
+  transform_format: 'transform',
   transform_map: 'transform', transform_filter: 'transform', transform_sql: 'transform', transform_script: 'transform',
   router: 'control', merge: 'control', iterator: 'control', sub_flow: 'control',
   set_variable: 'utility', logger: 'utility', approval: 'utility', notification: 'utility',
@@ -74,6 +77,11 @@ export function FlowCanvas() {
 
   const onPaneClick = useCallback(() => selectNode(null), [selectNode])
 
+  const isValidConnection = useCallback(
+    (edge: Connection | Edge) => edge.source !== edge.target,
+    [],
+  )
+
   return (
     <div ref={dropRef} className="flow-canvas" onDrop={onDrop} onDragOver={onDragOver}>
       <ReactFlow
@@ -85,11 +93,29 @@ export function FlowCanvas() {
         onConnect={onConnect}
         onNodeClick={onNodeClick}
         onPaneClick={onPaneClick}
+        isValidConnection={isValidConnection}
+        connectionMode={ConnectionMode.Loose}
+        connectionRadius={48}
+        nodesConnectable
+        edgesReconnectable
+        connectOnClick={false}
+        connectionLineType={ConnectionLineType.SmoothStep}
+        connectionLineStyle={{
+          stroke: 'var(--accent)',
+          strokeWidth: 2.5,
+          strokeDasharray: '6 4',
+        }}
+        defaultEdgeOptions={{
+          type: 'smoothstep',
+          style: { strokeWidth: 2, stroke: 'color-mix(in srgb, var(--accent) 85%, var(--text-muted))' },
+          interactionWidth: 24,
+        }}
         fitView
         fitViewOptions={{ padding: 0.2 }}
-        deleteKeyCode="Backspace"
+        deleteKeyCode={null}
         minZoom={0.2}
         maxZoom={2}
+        proOptions={{ hideAttribution: true }}
       >
         <Background variant={BackgroundVariant.Dots} gap={20} size={1} color="var(--border-subtle)" />
         <Controls showInteractive={false} />

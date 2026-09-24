@@ -1,6 +1,9 @@
+import { useEffect, useState } from 'react'
 import { useCanvasStore } from '@/store/canvasStore'
 import type { CanvasNodeData } from '@/types'
 import { ConnectorNodeConfig } from './ConnectorNodeConfig'
+import { DataPreviewPanel } from './DataPreviewPanel'
+import { SchedulerNodeConfig } from './SchedulerNodeConfig'
 import './ConfigPanel.css'
 import './ConnectorNodeConfig.css'
 
@@ -194,14 +197,7 @@ function StepConfigForm({
       )}
 
       {data.stepType === 'scheduler' && (
-        <div className="config-field">
-          <label className="config-label">Cron expression</label>
-          <input
-            value={(data.config.cron as string) || ''}
-            onChange={(e) => updateConfig('cron', e.target.value)}
-            placeholder="0 9 * * 1-5"
-          />
-        </div>
+        <SchedulerNodeConfig data={data} onUpdate={onUpdate} />
       )}
 
       {data.stepType === 'webhook_trigger' && (
@@ -218,20 +214,71 @@ function StepConfigForm({
   )
 }
 
-export function ConfigPanel() {
-  const { nodes, selectedNodeId, updateNodeData, deleteNode } = useCanvasStore()
+interface ConfigPanelProps {
+  flowId: string
+  flowName: string
+}
+
+export function ConfigPanel({ flowId, flowName }: ConfigPanelProps) {
+  const { nodes, edges, selectedNodeId, updateNodeData, deleteNode } = useCanvasStore()
   const node = nodes.find((n) => n.id === selectedNodeId)
+  const [collapsed, setCollapsed] = useState(false)
+
+  useEffect(() => {
+    if (selectedNodeId) setCollapsed(false)
+  }, [selectedNodeId])
+
+  if (collapsed) {
+    return (
+      <div className="config-panel config-panel--collapsed">
+        <button
+          type="button"
+          className="config-panel__rail-btn"
+          onClick={() => setCollapsed(false)}
+          title="Show step configuration"
+          aria-label="Expand configuration panel"
+        >
+          ‹
+        </button>
+      </div>
+    )
+  }
+
+  const collapseBtn = (
+    <button
+      type="button"
+      className="config-panel__collapse-btn"
+      onClick={() => setCollapsed(true)}
+      title="Hide panel for more canvas space"
+      aria-label="Collapse configuration panel"
+    >
+      ›
+    </button>
+  )
 
   if (!node) {
     return (
       <div className="config-panel config-panel--empty">
-        <p>Select a node to configure it</p>
+        {collapseBtn}
+        <div className="config-panel__empty-art" aria-hidden="true">
+          <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <rect x="8" y="12" width="20" height="16" rx="3" />
+            <rect x="36" y="36" width="20" height="16" rx="3" />
+            <path d="M28 20h8v24M36 28H28" />
+          </svg>
+        </div>
+        <p className="config-panel__empty-title">No step selected</p>
+        <p className="config-panel__empty-hint">
+          Click a node on the canvas to configure it. Click empty canvas to deselect.
+          Source and target use a guided setup wizard.
+        </p>
       </div>
     )
   }
 
   return (
     <div className="config-panel">
+      {collapseBtn}
       <div className="config-panel__header">
         <div>
           <div className="config-panel__title">{node.data.label}</div>
@@ -241,13 +288,6 @@ export function ConfigPanel() {
             : (node.data.stepType as string).replace(/_/g, ' ')}
         </div>
         </div>
-        <button
-          className="config-panel__delete"
-          onClick={() => deleteNode(node.id)}
-          title="Delete step"
-        >
-          ✕
-        </button>
       </div>
 
       <div className="config-panel__body">
@@ -256,12 +296,40 @@ export function ConfigPanel() {
           onUpdate={(patch) => updateNodeData(node.id, patch)}
         />
 
+        <DataPreviewPanel
+          flowId={flowId}
+          flowName={flowName}
+          stepId={node.id}
+          stepType={node.data.stepType as string}
+          stepLabel={String(node.data.label ?? '')}
+          nodes={nodes}
+          edges={edges}
+        />
+
         {node.data.status === 'failed' && node.data.error && (
           <div className="config-panel__error">
             <div className="config-panel__error-title">Last run error</div>
             <pre className="config-panel__error-body">{node.data.error}</pre>
           </div>
         )}
+
+        <div className="config-panel__danger-zone">
+          <p className="config-panel__danger-hint">
+            Use › on the left edge to hide this panel without removing the step.
+          </p>
+          <button
+            type="button"
+            className="config-panel__remove-btn"
+            onClick={() => {
+              const name = node.data.label || node.id
+              if (window.confirm(`Remove step "${name}" from this flow?`)) {
+                deleteNode(node.id)
+              }
+            }}
+          >
+            Remove step from flow
+          </button>
+        </div>
       </div>
     </div>
   )

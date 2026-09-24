@@ -1,33 +1,40 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
 
-/* ── Design tokens ─────────────────────────────────── */
-:root {
-  --bg: #070D1C;
-  --surface: #0D1829;
-  --surface-2: #152035;
-  --surface-3: #1C2D47;
-  --border: #1A2D4A;
-  --border-strong: #253F68;
-  --text: #E1E8F5;
-  --text-muted: #8A9EC0;
-  --text-dim: #556082;
-  --accent: #5B7FFF;
-  --accent-hover: #7A9BFF;
-  --accent-dim: rgba(91, 127, 255, 0.12);
-  --pass: #10B981;
-  --fail: #EF4444;
-  --warn: #F59E0B;
-  --node-trigger: #6366F1;
-  --node-connector: #10B981;
-  --node-transform: #A78BFA;
-  --node-control: #F59E0B;
-  --node-utility: #38BDF8;
-  --sidebar-width: 220px;
-  --panel-width: 320px;
-  --header-height: 56px;
-  --radius: 8px;
+/* SangamMW — SAP BTP Horizon / MuleSoft blue (distinct from AgentStudio orange) */
+:root,
+[data-theme='light'] {
+  --bg: #EDF0F3;
+  --surface: #FFFFFF;
+  --surface-2: #F5F7FA;
+  --surface-3: #E8EDF2;
+  --border: #D5DDE5;
+  --border-subtle: #E8EDF2;
+  --border-strong: #B8C5D1;
+  --text: #1D2D3E;
+  --text-muted: #5B738B;
+  --text-dim: #8396A8;
+  --accent: #0070F2;
+  --accent-hover: #0057D2;
+  --accent-dim: rgba(0, 112, 242, 0.1);
+  --shell-sidebar: #1D2D3E;
+  --shell-sidebar-text: #EAECEE;
+  --shell-sidebar-muted: #A9B4BE;
+  --pass: #107E3E;
+  --fail: #BB0000;
+  --warn: #E9730C;
+  --node-trigger: #5D36FF;
+  --node-connector: #0070F2;
+  --node-transform: #6A4DFF;
+  --node-control: #E9730C;
+  --node-utility: #0499A8;
+  --sidebar-width: 240px;
+  --panel-width: 420px;
+  --header-height: 52px;
+  --radius: 10px;
   --radius-sm: 6px;
-  /* aliases used by older component CSS */
+  --shadow-sm: 0 1px 3px rgba(29, 45, 62, 0.08);
+  --shadow-md: 0 4px 16px rgba(29, 45, 62, 0.1);
+  --wiz-glass: rgba(255, 255, 255, 0.92);
   --color-accent: var(--accent);
   --color-bg: var(--bg);
   --color-surface: var(--surface);
@@ -36,21 +43,26 @@
   --color-text: var(--text);
 }
 
-@media (prefers-color-scheme: light) {
-  :root:not([data-theme="dark"]) {
-    --bg: #EEF2FF;
-    --surface: #FFFFFF;
-    --surface-2: #F4F6FF;
-    --surface-3: #E8EDFF;
-    --border: #CDD6F8;
-    --border-strong: #ADBDF0;
-    --text: #0F1729;
-    --text-muted: #475681;
-    --text-dim: #6675AA;
-    --accent: #3D5FE0;
-    --accent-hover: #2D4DC8;
-    --accent-dim: rgba(61, 95, 224, 0.1);
-  }
+[data-theme='dark'] {
+  --bg: #0A1628;
+  --surface: #122338;
+  --surface-2: #1A2F47;
+  --surface-3: #223A56;
+  --border: #2A4562;
+  --border-subtle: #1E3550;
+  --border-strong: #3A5F82;
+  --text: #E8EDF2;
+  --text-muted: #A9B4BE;
+  --text-dim: #7B8FA3;
+  --accent: #4DB1FF;
+  --accent-hover: #7CC4FF;
+  --accent-dim: rgba(77, 177, 255, 0.14);
+  --shell-sidebar: #0D1B2A;
+  --shell-sidebar-text: #E8EDF2;
+  --shell-sidebar-muted: #8FA4B8;
+  --pass: #3AC27D;
+  --fail: #FF6B6B;
+  --wiz-glass: rgba(18, 35, 56, 0.94);
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -58,7 +70,7 @@
 html, body, #root {
   height: 100%;
   overflow: hidden;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
   font-size: 13px;
   background: var(--bg);
   color: var(--text);
@@ -78,27 +90,37 @@ input, select, textarea {
   font-family: inherit;
   font-size: 13px;
   color: var(--text);
-  background: var(--surface-2);
-  border: 1px solid var(--border);
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
   border-radius: var(--radius-sm);
-  padding: 6px 10px;
+  padding: 8px 10px;
   outline: none;
   width: 100%;
 }
+
 input:focus, select:focus, textarea:focus {
   border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-dim);
 }
 
-/* Scrollbar */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
-/* React Flow overrides */
 .react-flow__background { background: var(--bg); }
-.react-flow__minimap { background: var(--surface) !important; border: 1px solid var(--border); border-radius: var(--radius); }
-.react-flow__controls { background: var(--surface) !important; border: 1px solid var(--border) !important; border-radius: var(--radius); }
+.react-flow__minimap {
+  background: var(--surface) !important;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+}
+.react-flow__controls {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+}
 .react-flow__controls button {
   background: var(--surface) !important;
   border-bottom: 1px solid var(--border) !important;

@@ -205,7 +205,7 @@ export function LoginPage() {
           </p>
 
           <div className="login-footer">
-            © 2024 SangamMW · Enterprise Integration Platform
+            © 2026 SangamMW · Enterprise Integration Platform
           </div>
         </div>
       </div>

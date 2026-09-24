@@ -27,6 +27,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ...db.base import get_session
 from ...db.tables import ScheduledFlowTable
+from ...engine.flow_run_service import execute_flow_by_id
+from ...engine.schedule_registry import apply_schedule_row, remove_schedule, touch_last_run
 from ...rbac.permissions import Permission, require_permission
 
 router = APIRouter(prefix="/scheduler", tags=["scheduler"])
@@ -48,11 +50,18 @@ class JobCreate(BaseModel):
             raise ValueError("Provide either cron_expr or interval_seconds")
         if self.cron_expr is not None and self.interval_seconds is not None:
             raise ValueError("Provide only one of cron_expr or interval_seconds")
-        if self.cron_expr is not None and _HAS_CRONITER:
+        if self.cron_expr is not None:
+            from ...engine.cron_expr import validate_cron_expr
+
             try:
-                _croniter(self.cron_expr)
-            except (ValueError, KeyError) as exc:
-                raise ValueError(f"Invalid cron expression: {exc}") from exc
+                validate_cron_expr(self.cron_expr)
+            except ValueError as exc:
+                raise ValueError(str(exc)) from exc
+            if _HAS_CRONITER:
+                try:
+                    _croniter(self.cron_expr)
+                except (ValueError, KeyError) as exc:
+                    raise ValueError(f"Invalid cron expression: {exc}") from exc
         return self
 
 
@@ -105,6 +114,15 @@ def _trigger_label(row: ScheduledFlowTable) -> str:
 
 def _cron_human(expr: str) -> str:
     parts = expr.split()
+    if len(parts) == 6:
+        second, minute, hour, dom, month, dow = parts
+        if dom == "*" and month == "*" and dow not in ("*", ""):
+            days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+            if re.match(r"^[0-6]$", dow):
+                return f"Weekly on {days[int(dow)]} at {hour.zfill(2)}:{minute.zfill(2)}:{second.zfill(2)}"
+        if dom == "*" and month == "*" and dow == "*":
+            return f"Daily at {hour.zfill(2)}:{minute.zfill(2)}:{second.zfill(2)}"
+        return f"cron({expr})"
     if len(parts) != 5:
         return expr
     minute, hour, dom, month, dow = parts
@@ -169,6 +187,7 @@ async def create_job(
 
     await session.commit()
     await session.refresh(row)
+    apply_schedule_row(row, body.flow_id)
     return _row_to_dict(row)
 
 
@@ -190,16 +209,24 @@ async def update_job(
 ) -> dict[str, Any]:
     row = await _get_or_404(session, flow_id)
     updates = body.model_dump(exclude_none=True)
-    if "cron_expr" in updates and updates["cron_expr"] and _HAS_CRONITER:
+    if "cron_expr" in updates and updates["cron_expr"]:
+        from ...engine.cron_expr import validate_cron_expr
+
         try:
-            _croniter(updates["cron_expr"])
-        except (ValueError, KeyError) as exc:
-            raise HTTPException(status_code=422, detail=f"Invalid cron: {exc}") from exc
+            validate_cron_expr(updates["cron_expr"])
+        except ValueError as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
+        if _HAS_CRONITER:
+            try:
+                _croniter(updates["cron_expr"])
+            except (ValueError, KeyError) as exc:
+                raise HTTPException(status_code=422, detail=f"Invalid cron: {exc}") from exc
     for k, v in updates.items():
         setattr(row, k, v)
     row.updated_at = datetime.now(UTC)
     await session.commit()
     await session.refresh(row)
+    apply_schedule_row(row, flow_id)
     return _row_to_dict(row)
 
 
@@ -212,6 +239,7 @@ async def delete_job(
     row = await _get_or_404(session, flow_id)
     await session.delete(row)
     await session.commit()
+    remove_schedule(flow_id)
 
 
 @router.post("/jobs/{flow_id}/trigger")
@@ -220,10 +248,21 @@ async def trigger_job(
     _user: dict = Depends(require_permission(Permission.FLOW_DEPLOY)),
     session: AsyncSession = Depends(get_session),
 ) -> dict[str, Any]:
-    row = await _get_or_404(session, flow_id)
-    row.last_run_at = datetime.now(UTC)
-    await session.commit()
-    return {"flow_id": flow_id, "triggered_at": row.last_run_at.isoformat(), "status": "queued"}
+    await _get_or_404(session, flow_id)
+    run = await execute_flow_by_id(
+        flow_id,
+        trigger_type="schedule",
+        triggered_by="scheduler-manual",
+    )
+    if run is None:
+        raise HTTPException(status_code=404, detail=f"Flow {flow_id!r} not found")
+    await touch_last_run(flow_id)
+    return {
+        "flow_id": flow_id,
+        "run_id": run.run_id,
+        "status": run.status,
+        "triggered_at": datetime.now(UTC).isoformat(),
+    }
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────

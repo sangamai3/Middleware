@@ -24,4 +24,17 @@ export const connectorsApi = {
     api.post<ObjectSchema[]>(`/connectors/${id}/objects`, { config }),
   columns: (id: string, config: Record<string, unknown>, objectName: string) =>
     api.post<ColumnSchema[]>(`/connectors/${id}/columns`, { config, object_name: objectName }),
+  sample: (
+    id: string,
+    config: Record<string, unknown>,
+    objectName: string,
+    limit = 25,
+  ) =>
+    api.post<{
+      columns: { name: string; data_type: string }[]
+      rows: Record<string, unknown>[]
+      row_count: number
+      preview_row_count: number
+      truncated: boolean
+    }>(`/connectors/${id}/sample`, { config, object_name: objectName, limit }),
 }

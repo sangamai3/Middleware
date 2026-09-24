@@ -1,4 +1,5 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
+import { buildFlowDefinition } from '@/lib/flowDefinition'
 import { useParams, useNavigate } from 'react-router-dom'
 import { ReactFlowProvider } from '@xyflow/react'
 import type { Edge } from '@xyflow/react'
@@ -11,6 +12,7 @@ import { Toolbar } from '@/components/canvas/Toolbar'
 import { NodePalette } from '@/components/canvas/NodePalette'
 import { FlowCanvas } from '@/components/canvas/FlowCanvas'
 import { ConfigPanel } from '@/components/panels/ConfigPanel'
+import { RunResultsPanel } from '@/components/canvas/RunResultsPanel'
 import './FlowDesignerPage.css'
 
 const STEP_META: Record<string, { label: string; family: NodeFamily }> = {
@@ -80,33 +82,60 @@ function stepsToCanvas(steps: StepConfig[]): { nodes: CanvasNode[]; edges: Edge[
 export function FlowDesignerPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const { currentFlow, setFlow } = useFlowStore()
-  const { setNodes, setEdges, selectedNodeId } = useCanvasStore()
+  const { currentFlow, setFlow, isDirty, markClean } = useFlowStore()
+  const { nodes, edges, setNodes, setEdges } = useCanvasStore()
+  const loadedFlowId = useRef<string | null>(null)
 
   useEffect(() => {
     if (!id) return
+    loadedFlowId.current = null
     flowsApi.get(id)
       .then((flow) => {
         setFlow(flow)
         const { nodes, edges } = stepsToCanvas(flow.steps ?? [])
         setNodes(nodes)
         setEdges(edges)
+        loadedFlowId.current = id
       })
       .catch(() => navigate('/flows'))
-  }, [id])
+  }, [id, navigate, setFlow, setNodes, setEdges])
 
   const flowId = currentFlow?.flow_id ?? id ?? ''
   const flowName = currentFlow?.name ?? ''
 
+  useEffect(() => {
+    if (!flowId || !flowName || loadedFlowId.current !== flowId || !isDirty) return
+    const timer = window.setTimeout(() => {
+      const definition = buildFlowDefinition(flowId, flowName, nodes, edges)
+      flowsApi.update(flowId, definition).then(() => markClean()).catch(() => {})
+    }, 2000)
+    return () => window.clearTimeout(timer)
+  }, [flowId, flowName, nodes, edges, isDirty, markClean])
+
+  useEffect(() => {
+    const onBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (!isDirty) return
+      e.preventDefault()
+      e.returnValue = ''
+    }
+    window.addEventListener('beforeunload', onBeforeUnload)
+    return () => window.removeEventListener('beforeunload', onBeforeUnload)
+  }, [isDirty])
+
   return (
     <ReactFlowProvider>
       <div className="designer">
-        <Toolbar flowId={flowId} flowName={flowName} />
+        <Toolbar
+          flowId={flowId}
+          flowName={flowName}
+          initialStatus={currentFlow?.status}
+        />
         <div className="designer__body">
           <NodePalette />
           <FlowCanvas />
-          {selectedNodeId && <ConfigPanel />}
+          <ConfigPanel flowId={flowId} flowName={flowName} />
         </div>
+        <RunResultsPanel />
       </div>
     </ReactFlowProvider>
   )

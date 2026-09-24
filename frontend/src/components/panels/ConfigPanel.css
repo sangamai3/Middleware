@@ -1,19 +1,92 @@
 .config-panel {
+  position: relative;
   width: var(--panel-width);
   flex-shrink: 0;
   background: var(--surface);
   border-left: 1px solid var(--border);
+  box-shadow: -4px 0 24px rgba(29, 45, 62, 0.06);
   display: flex;
   flex-direction: column;
   height: 100%;
   overflow: hidden;
 }
 
+.config-panel--collapsed {
+  width: 36px;
+  min-width: 36px;
+  padding: 0;
+  align-items: center;
+  justify-content: center;
+  box-shadow: none;
+}
+
+.config-panel__rail-btn,
+.config-panel__collapse-btn {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  width: 22px;
+  height: 48px;
+  margin-left: -11px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text-muted);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+.config-panel__rail-btn:hover,
+.config-panel__collapse-btn:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.config-panel--collapsed .config-panel__rail-btn {
+  position: static;
+  transform: none;
+  margin: 0;
+  width: 28px;
+  height: 56px;
+}
+
 .config-panel--empty {
   align-items: center;
   justify-content: center;
+  text-align: center;
+  padding: 32px 24px 32px 28px;
   color: var(--text-muted);
   font-size: 13px;
+}
+
+.config-panel__empty-art {
+  width: 72px;
+  height: 72px;
+  margin-bottom: 16px;
+  color: var(--accent);
+  opacity: 0.55;
+}
+
+.config-panel__empty-art svg {
+  width: 100%;
+  height: 100%;
+}
+
+.config-panel__empty-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+
+.config-panel__empty-hint {
+  font-size: 12px;
+  line-height: 1.55;
+  max-width: 260px;
 }
 
 .config-panel__header {
@@ -40,16 +113,33 @@
   margin-top: 2px;
 }
 
-.config-panel__delete {
-  color: var(--text-muted);
-  font-size: 11px;
-  padding: 3px 6px;
-  border-radius: var(--radius-sm);
-  flex-shrink: 0;
+.config-panel__danger-zone {
+  margin-top: 8px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-subtle);
 }
-.config-panel__delete:hover {
-  background: color-mix(in srgb, var(--fail) 15%, transparent);
+
+.config-panel__danger-hint {
+  font-size: 11px;
+  color: var(--text-dim);
+  line-height: 1.45;
+  margin: 0 0 10px;
+}
+
+.config-panel__remove-btn {
+  width: 100%;
+  padding: 9px 12px;
+  font-size: 12px;
+  font-weight: 600;
   color: var(--fail);
+  background: color-mix(in srgb, var(--fail) 6%, transparent);
+  border: 1px solid color-mix(in srgb, var(--fail) 28%, transparent);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.config-panel__remove-btn:hover {
+  background: color-mix(in srgb, var(--fail) 12%, transparent);
 }
 
 .config-panel__body {
@@ -62,6 +152,30 @@
 }
 
 /* Form fields */
+.scheduler-node-config {
+  margin-top: 4px;
+}
+
+.scheduler-node-config__hint {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.config-panel .cron-builder {
+  padding: 10px;
+}
+
+.config-panel .cron-builder__patterns {
+  gap: 3px;
+}
+
+.config-panel .cron-builder__pattern {
+  padding: 4px 8px;
+  font-size: 11px;
+}
+
 .config-form {
   display: flex;
   flex-direction: column;

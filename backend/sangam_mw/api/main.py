@@ -37,7 +37,15 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     registry.load()
     init_metrics()
     logger.info("sangammw.connectors_loaded", count=len(registry.ids()), ids=registry.ids())
+    from ..engine.schedule_registry import bootstrap_scheduler, shutdown_scheduler
+
+    try:
+        await bootstrap_scheduler()
+        logger.info("sangammw.scheduler_started")
+    except Exception as exc:
+        logger.warning("sangammw.scheduler_start_failed", error=str(exc))
     yield
+    await shutdown_scheduler()
     from ..db.base import _engine
 
     if _engine:

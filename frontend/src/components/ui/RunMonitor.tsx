@@ -55,7 +55,11 @@ export function RunMonitor({ executionId, onComplete }: Props) {
           <div key={i} className={`run-event run-event--${eventSeverity(e.type)}`}>
             <span className="run-event__time">{new Date(e.timestamp).toLocaleTimeString()}</span>
             <span className="run-event__type">{e.type}</span>
-            {e.step_id && <span className="run-event__step">{e.step_id}</span>}
+            {e.step_id && (
+              <span className="run-event__step" title={e.step_id}>
+                {String(e.payload?.step_label ?? e.step_id)}
+              </span>
+            )}
             <span className="run-event__msg">{String(e.payload?.message ?? e.payload?.error ?? '')}</span>
           </div>
         ))}

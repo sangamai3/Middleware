@@ -1,0 +1,129 @@
+.flow-compose-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.flow-compose-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(29, 45, 62, 0.5);
+}
+
+.flow-compose-modal__panel {
+  position: relative;
+  width: 100%;
+  max-width: 720px;
+  max-height: 90vh;
+  overflow: auto;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  box-shadow: var(--shadow-md);
+}
+
+.flow-compose-modal__head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.flow-compose-modal__head h2 {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.flow-compose-modal__head p {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.flow-compose-modal__close {
+  background: none;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+  color: var(--text-muted);
+}
+
+.flow-compose-modal__profiles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.flow-compose-modal__chip {
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--surface-2);
+  cursor: pointer;
+}
+
+.flow-compose-modal__chip--on {
+  border-color: var(--accent);
+  background: var(--accent-dim);
+  color: var(--accent);
+}
+
+.flow-compose-modal__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+
+.flow-compose-modal__label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+.flow-compose-modal__code {
+  width: 100%;
+  margin-top: 6px;
+  font-family: ui-monospace, monospace;
+  font-size: 11px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  resize: vertical;
+}
+
+.flow-compose-modal__actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.flow-compose-modal__hint {
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-top: 14px;
+  line-height: 1.5;
+}
+
+.flow-compose-modal__loading,
+.flow-compose-modal__error {
+  padding: 16px;
+  font-size: 13px;
+}
+
+.flow-compose-modal__error {
+  color: var(--fail);
+}

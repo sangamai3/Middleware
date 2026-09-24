@@ -24,6 +24,23 @@ class DAGParser:
         self._check_unknown_deps()
         self._check_cycles()
 
+    def ancestor_ids(self, step_id: str) -> list[str]:
+        """Step IDs required to execute ``step_id`` (upstream deps + self), in run order."""
+        if step_id not in self._steps:
+            raise FlowValidationError(f"Unknown step '{step_id}'")
+        needed: set[str] = set()
+
+        def collect(sid: str) -> None:
+            if sid in needed:
+                return
+            needed.add(sid)
+            for dep in self._steps[sid].depends_on:
+                collect(dep)
+
+        collect(step_id)
+        order = self.topological_order()
+        return [sid for sid in order if sid in needed]
+
     def topological_order(self) -> list[str]:
         """Return step IDs in a valid execution order (Kahn's algorithm)."""
         self._check_unknown_deps()

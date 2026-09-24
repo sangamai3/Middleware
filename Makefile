@@ -1,14 +1,17 @@
-.PHONY: dev test lint typecheck migrate deploy clean docker-build docker-up docker-down help
+.PHONY: dev dev-all dev-db test lint typecheck migrate deploy clean docker-build docker-up docker-down help
 
 PYTHON   := python3
 PIP      := pip3
 BACKEND  := backend
 ENV_FILE := .env
+API_PORT := 8100
 
 help:
 	@echo "SangamMW development commands"
 	@echo ""
-	@echo "  make dev          Start backend + frontend in development mode"
+	@echo "  make dev          Ensure Postgres + start API (port $(API_PORT))"
+	@echo "  make dev-all      Ensure Postgres + API + Vite (scripts/dev.sh)"
+	@echo "  make dev-db       Ensure Postgres + run migrations only"
 	@echo "  make test         Run unit + integration tests"
 	@echo "  make test-unit    Run unit tests only (no Postgres needed)"
 	@echo "  make lint         ruff check + ruff format check"
@@ -23,10 +26,17 @@ help:
 	@echo "  make key          Generate a new FERNET_KEY"
 	@echo "  make clean        Remove build artifacts"
 
+dev-db:
+	cd $(BACKEND) && $(PYTHON) -m sangam_mw.dev.db_bootstrap
+
 dev:
-	@echo "→ Starting SangamMW dev server..."
-	cd $(BACKEND) && uvicorn sangam_mw.api.main:app --reload --port 8000 &
-	@echo "→ API: http://localhost:8000/docs"
+	@$(MAKE) dev-db
+	@echo "→ Starting SangamMW API on port $(API_PORT)…"
+	cd $(BACKEND) && uvicorn sangam_mw.api.main:app --reload --reload-exclude '.venv/*' --host 127.0.0.1 --port $(API_PORT)
+
+dev-all:
+	@chmod +x scripts/dev.sh 2>/dev/null || true
+	API_PORT=$(API_PORT) PYTHON=$(PYTHON) ./scripts/dev.sh
 
 test:
 	cd $(BACKEND) && pytest tests/ -v --tb=short

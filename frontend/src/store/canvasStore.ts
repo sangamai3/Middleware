@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { addEdge, applyNodeChanges, applyEdgeChanges } from '@xyflow/react'
 import type { Edge, Connection, NodeChange, EdgeChange } from '@xyflow/react'
-import type { CanvasNodeData, FlowEvent, StepStatus } from '@/types'
+import type { CanvasNodeData, ExecutionRun, FlowEvent, StepStatus } from '@/types'
 import type { CanvasNode } from '@/components/nodes/BaseNode'
 import { useFlowStore } from '@/store/flowStore'
 
@@ -13,6 +13,8 @@ interface CanvasStore {
   selectedNodeId: string | null
   runId: string | null
   isRunning: boolean
+  runResult: ExecutionRun | null
+  runPanelOpen: boolean
 
   setNodes: (nodes: CanvasNode[]) => void
   setEdges: (edges: Edge[]) => void
@@ -27,6 +29,8 @@ interface CanvasStore {
 
   setRunId: (id: string | null) => void
   setRunning: (running: boolean) => void
+  setRunResult: (run: ExecutionRun | null) => void
+  setRunPanelOpen: (open: boolean) => void
   applyFlowEvent: (event: FlowEvent) => void
   resetRunState: () => void
 }
@@ -37,18 +41,42 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
   selectedNodeId: null,
   runId: null,
   isRunning: false,
+  runResult: null,
+  runPanelOpen: false,
 
   setNodes: (nodes) => set({ nodes }),
   setEdges: (edges) => set({ edges }),
 
-  onNodesChange: (changes) =>
-    set({ nodes: applyNodeChanges(changes, get().nodes) }),
+  onNodesChange: (changes) => {
+    // Only explicit "Remove step" in the config panel may delete nodes (not Backspace/Delete).
+    const safe = changes.filter((c) => c.type !== 'remove')
+    if (safe.length === 0) return
+    set({ nodes: applyNodeChanges(safe, get().nodes) })
+  },
 
   onEdgesChange: (changes) =>
     set({ edges: applyEdgeChanges(changes, get().edges) }),
 
-  onConnect: (connection) =>
-    set({ edges: addEdge({ ...connection, animated: false }, get().edges) }),
+  onConnect: (connection) => {
+    const normalized: Connection = {
+      ...connection,
+      sourceHandle: connection.sourceHandle ?? 'out',
+      targetHandle: connection.targetHandle ?? 'in',
+    }
+    set({
+      edges: addEdge(
+        {
+          ...normalized,
+          type: 'smoothstep',
+          animated: false,
+          style: { strokeWidth: 2, stroke: 'color-mix(in srgb, var(--accent) 85%, var(--text-muted))' },
+          interactionWidth: 24,
+        },
+        get().edges,
+      ),
+    })
+    markFlowDirty()
+  },
 
   addNode: (node) => {
     set({ nodes: [...get().nodes, node] })
@@ -57,9 +85,22 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
 
   updateNodeData: (id, data) => {
     set({
-      nodes: get().nodes.map((n) =>
-        n.id === id ? { ...n, data: { ...n.data, ...data } } : n,
-      ),
+      nodes: get().nodes.map((n) => {
+        if (n.id !== id) return n
+        const merged: CanvasNodeData = { ...n.data, ...data }
+        if (data.config !== undefined) {
+          const prev = (n.data.config ?? {}) as Record<string, unknown>
+          const next = data.config as Record<string, unknown>
+          const prevConn = (prev.conn ?? {}) as Record<string, unknown>
+          const nextConn = next.conn as Record<string, unknown> | undefined
+          merged.config = {
+            ...prev,
+            ...next,
+            ...(nextConn ? { conn: { ...prevConn, ...nextConn } } : {}),
+          }
+        }
+        return { ...n, data: merged }
+      }),
     })
     markFlowDirty()
   },
@@ -77,6 +118,8 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
 
   setRunId: (id) => set({ runId: id }),
   setRunning: (running) => set({ isRunning: running }),
+  setRunResult: (run) => set({ runResult: run }),
+  setRunPanelOpen: (open) => set({ runPanelOpen: open }),
 
   applyFlowEvent: (event) => {
     const { type, step_id, payload } = event

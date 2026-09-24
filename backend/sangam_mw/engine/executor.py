@@ -40,8 +40,12 @@ from .handlers import (
     TransformMapHandler,
     TransformScriptHandler,
     TransformSQLHandler,
+    trigger_handlers,
 )
 from .handlers.base import StepHandler
+from .format_preview import dataframe_formatted_output
+from .preview import dataframe_to_preview
+from .step_display import step_connector_id, step_display_name
 
 logger = structlog.get_logger(__name__)
 
@@ -56,6 +60,7 @@ _HANDLER_MAP: dict[str, StepHandler] = {
     "router": RouterHandler(),
     "set_variable": SetVariableHandler(),
     "logger": LoggerHandler(),
+    **trigger_handlers(),
 }
 
 
@@ -104,7 +109,15 @@ class FlowExecutor:
             step_map = {s.id: s for s in flow.steps}
             for step_id in ordered_ids:
                 step = step_map[step_id]
-                self._fire_log(run_id, flow.flow_id, f"Step started: {step_id}", "INFO", step_id=step_id, correlation_id=correlation_id)
+                step_label = step_display_name(step)
+                self._fire_log(
+                    run_id,
+                    flow.flow_id,
+                    f"Step started: {step_label}",
+                    "INFO",
+                    step_id=step_id,
+                    correlation_id=correlation_id,
+                )
                 step_exec = self._run_step(step, context)
                 step_executions.append(step_exec)
                 if step_exec.status == StepStatus.FAILED:
@@ -148,6 +161,7 @@ class FlowExecutor:
         run = ExecutionRun(
             run_id=run_id,
             flow_id=flow.flow_id,
+            flow_name=flow.name or "",
             trigger_type=trigger_type,
             status=run_status,
             started_at=_ts(started_at),
@@ -164,6 +178,82 @@ class FlowExecutor:
         self._fire_persist(run, flow_name=getattr(flow, "name", ""), correlation_id=correlation_id, duration_ms=duration_ms, total_rows=total_rows)
 
         return run
+
+    def preview(
+        self,
+        flow: FlowDefinition,
+        step_id: str,
+        limit: int = 25,
+    ) -> dict[str, Any]:
+        """
+        Execute all upstream steps plus ``step_id`` and return tabular preview data.
+        Does not persist runs or perform sink writes (preview_mode).
+        """
+        parser = DAGParser(flow.steps)
+        parser.validate()
+        order = parser.ancestor_ids(step_id)
+        step_map = {s.id: s for s in flow.steps}
+
+        context = ExecutionContext(
+            run_id="preview",
+            flow_id=flow.flow_id,
+            preview_mode=True,
+        )
+
+        steps_executed: list[str] = []
+        for sid in order:
+            step = step_map[sid]
+            step_exec = self._run_step(step, context)
+            steps_executed.append(step_display_name(step))
+            if step_exec.status == StepStatus.FAILED:
+                return {
+                    "step_id": step_id,
+                    "step_label": step_display_name(step_map[step_id]),
+                    "steps_executed": steps_executed,
+                    "error": step_exec.error_message or "Step failed",
+                    "columns": [],
+                    "rows": [],
+                    "row_count": 0,
+                    "preview_row_count": 0,
+                    "truncated": False,
+                }
+
+        try:
+            df = context.get_output(step_id)
+        except KeyError:
+            return {
+                "step_id": step_id,
+                "step_label": step_display_name(step_map[step_id]),
+                "steps_executed": steps_executed,
+                "error": "This step does not produce tabular output to preview.",
+                "columns": [],
+                "rows": [],
+                "row_count": 0,
+                "preview_row_count": 0,
+                "truncated": False,
+            }
+
+        target_step = step_map[step_id]
+        payload = dataframe_to_preview(df, limit=limit)
+        payload["step_id"] = step_id
+        payload["step_label"] = step_display_name(target_step)
+        payload["steps_executed"] = steps_executed
+
+        in_fmt = str(target_step.config.get("input_format") or "").strip()
+        out_fmt = str(target_step.config.get("output_format") or "").strip()
+        if in_fmt:
+            payload["input_format"] = in_fmt.lstrip(".")
+        if out_fmt:
+            payload["output_format"] = out_fmt.lstrip(".")
+
+        if target_step.type == "transform_format" and out_fmt:
+            formatted = dataframe_formatted_output(
+                df, out_fmt, target_step.config, limit=min(10, limit)
+            )
+            if formatted:
+                payload["formatted_output"] = formatted
+
+        return payload
 
     def _fire_log(
         self,
@@ -208,12 +298,15 @@ class FlowExecutor:
         error_message: str | None = None
         rows_in: int | None = None
         rows_out: int | None = None
+        step_label = step_display_name(step)
+        connector_id = step_connector_id(step)
 
         self._bus.emit(FlowEvent(
             type=EventType.STEP_STARTED,
             run_id=context.run_id,
             flow_id=context.flow_id,
             step_id=step.id,
+            payload={"step_label": step_label, "connector_id": connector_id},
         ))
 
         handler = _HANDLER_MAP.get(step.type)
@@ -231,6 +324,8 @@ class FlowExecutor:
             return StepExecution(
                 step_id=step.id,
                 step_type=step.type,
+                step_label=step_label,
+                connector_id=connector_id,
                 status=status,
                 started_at=started_at,
                 ended_at=ended_at,
@@ -259,7 +354,7 @@ class FlowExecutor:
                 run_id=context.run_id,
                 flow_id=context.flow_id,
                 step_id=step.id,
-                payload={"rows_out": rows_out},
+                payload={"rows_out": rows_out, "step_label": step_label, "connector_id": connector_id},
             ))
 
         except SangamMWException as exc:
@@ -289,6 +384,8 @@ class FlowExecutor:
         return StepExecution(
             step_id=step.id,
             step_type=step.type,
+            step_label=step_label,
+            connector_id=connector_id,
             status=status,
             started_at=datetime.fromtimestamp(started_at, tz=timezone.utc),
             ended_at=datetime.fromtimestamp(ended_at, tz=timezone.utc),

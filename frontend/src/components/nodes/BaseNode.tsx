@@ -163,6 +163,7 @@ export const BaseNode = memo(({ data, selected }: NodeProps<CanvasNode>) => {
   const fmtInColor  = fmtIn  ? (FORMAT_COLORS[`.${fmtIn}`]  ?? 'var(--node-transform)') : 'var(--node-transform)'
   const fmtOutColor = fmtOut ? (FORMAT_COLORS[`.${fmtOut}`] ?? 'var(--node-transform)') : 'var(--node-transform)'
   const isFormatConfigured = isFormatConvert && !!(fmtIn && fmtOut)
+  const isTrigger = (data.family as NodeFamily) === 'trigger'
 
   return (
     <div
@@ -176,7 +177,16 @@ export const BaseNode = memo(({ data, selected }: NodeProps<CanvasNode>) => {
       })}
       style={{ '--node-color': isConfigured ? connColor : color } as React.CSSProperties}
     >
-      <Handle type="target" position={Position.Left} />
+      {!isTrigger && (
+        <Handle
+          type="target"
+          position={Position.Left}
+          id="in"
+          className="flow-handle flow-handle--target nodrag nopan"
+          title="Drag a connection here (input)"
+        />
+      )}
+      {!isTrigger && <span className="flow-port-label flow-port-label--in" aria-hidden="true">in</span>}
 
       <div className="base-node__accent" />
 
@@ -261,7 +271,14 @@ export const BaseNode = memo(({ data, selected }: NodeProps<CanvasNode>) => {
         </div>
       )}
 
-      <Handle type="source" position={Position.Right} />
+      <Handle
+        type="source"
+        position={Position.Right}
+        id="out"
+        className="flow-handle flow-handle--source nodrag nopan"
+        title="Drag to the next step (output)"
+      />
+      <span className="flow-port-label flow-port-label--out" aria-hidden="true">out</span>
     </div>
   )
 })

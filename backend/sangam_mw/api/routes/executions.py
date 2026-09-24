@@ -18,17 +18,16 @@ from typing import Any
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from ...db.base import get_session
+from ...db.flow_store import get_flow_definition
 from ...engine.events import event_bus
-from ...engine.executor import FlowExecutor
 from ...models.execution import ExecutionRun
+from ...runs.store import get_run, list_runs as all_runs, put_run
 from ..auth import get_current_user
-from .flows import _flows
 
 router = APIRouter(tags=["executions"])
-
-# In-memory run store for dev/test.
-_runs: dict[str, ExecutionRun] = {}
 
 
 class ExecuteRequest(BaseModel):
@@ -37,14 +36,17 @@ class ExecuteRequest(BaseModel):
 
 
 @router.post("/flows/{flow_id}/execute", response_model=dict)
-def execute_flow(
+async def execute_flow(
     flow_id: str,
     req: ExecuteRequest,
     _user: dict = Depends(get_current_user),
+    session: AsyncSession = Depends(get_session),
 ) -> dict:
-    flow = _flows.get(flow_id)
+    flow = await get_flow_definition(session, flow_id)
     if not flow:
         raise HTTPException(status_code=404, detail="Flow not found")
+
+    from ...engine.executor import FlowExecutor
 
     executor = FlowExecutor(bus=event_bus)
     run = executor.execute(
@@ -53,7 +55,7 @@ def execute_flow(
         triggered_by=req.triggered_by or _user.get("sub"),
         variables=req.variables,
     )
-    _runs[run.run_id] = run
+    put_run(run)
     return {
         "run_id": run.run_id,
         "status": run.status,
@@ -71,13 +73,13 @@ def list_runs(_user: dict = Depends(get_current_user)) -> list[dict]:
             "status": r.status,
             "started_at": r.started_at,
         }
-        for r in sorted(_runs.values(), key=lambda r: r.started_at or 0, reverse=True)
+        for r in sorted(all_runs(), key=lambda r: r.started_at or 0, reverse=True)
     ]
 
 
 @router.get("/runs/{run_id}", response_model=dict)
 def get_run(run_id: str, _user: dict = Depends(get_current_user)) -> dict:
-    run = _runs.get(run_id)
+    run = get_run(run_id)
     if not run:
         raise HTTPException(status_code=404, detail="Run not found")
     return run.model_dump()
@@ -113,7 +115,7 @@ async def debug_run(
     _user: dict = Depends(get_current_user),
 ) -> dict[str, Any]:
     """AI-assisted debug for a failed run. Returns a plain-text suggestion."""
-    run = _runs.get(run_id)
+    run = get_run(run_id)
     if not run:
         raise HTTPException(status_code=404, detail="Run not found")
 

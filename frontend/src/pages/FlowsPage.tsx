@@ -1,33 +1,58 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { flowsApi } from '@/api/flows'
+import {
+  EmptyPanel,
+  FlowStatusBadge,
+  PageHeader,
+  SurfaceCard,
+} from '@/components/ui/enterprise/PageChrome'
+import '@/components/ui/enterprise/PageChrome.css'
 import './FlowsPage.css'
 
-function statusBadge(status: string) {
-  const cls: Record<string, string> = {
-    deployed: 'badge--pass', failed: 'badge--fail', draft: 'badge--muted', paused: 'badge--warn',
-  }
-  return `badge ${cls[status] || 'badge--muted'}`
+type FlowRow = {
+  flow_id: string
+  name: string
+  status: string
+  created_at?: string | null
+  updated_at?: string | null
 }
+
+const STATUS_FILTERS = ['all', 'deployed', 'draft', 'paused', 'failed'] as const
 
 function fmtDate(iso: string | null | undefined) {
   if (!iso) return '—'
   const d = new Date(iso)
-  return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
-    + ' ' + d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })
+  return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
+    + ' · '
+    + d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })
 }
 
 export function FlowsPage() {
   const navigate = useNavigate()
   const qc = useQueryClient()
-  const [creating, setCreating] = useState(false)
+  const [search, setSearch] = useState('')
+  const [statusFilter, setStatusFilter] = useState<(typeof STATUS_FILTERS)[number]>('all')
+  const [showCreate, setShowCreate] = useState(false)
   const [newName, setNewName] = useState('')
 
   const { data: flows = [], isLoading } = useQuery({
     queryKey: ['flows'],
     queryFn: () => flowsApi.list(),
   })
+
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase()
+    return (flows as FlowRow[]).filter((f) => {
+      if (statusFilter !== 'all' && f.status !== statusFilter) return false
+      if (!q) return true
+      return (
+        f.name?.toLowerCase().includes(q)
+        || f.flow_id.toLowerCase().includes(q)
+      )
+    })
+  }, [flows, search, statusFilter])
 
   const createMutation = useMutation({
     mutationFn: (name: string) =>
@@ -59,81 +84,172 @@ export function FlowsPage() {
     if (!newName.trim()) return
     createMutation.mutate(newName.trim())
     setNewName('')
-    setCreating(false)
+    setShowCreate(false)
   }
 
+  const counts = useMemo(() => {
+    const list = flows as FlowRow[]
+    return {
+      all: list.length,
+      deployed: list.filter((f) => f.status === 'deployed').length,
+      draft: list.filter((f) => f.status === 'draft').length,
+      paused: list.filter((f) => f.status === 'paused').length,
+      failed: list.filter((f) => f.status === 'failed').length,
+    }
+  }, [flows])
+
   return (
-    <div className="flows-page">
-      <div className="flows-page__header">
-        <h1 className="flows-page__title">Flows</h1>
-        <button
-          className="btn btn--primary"
-          onClick={() => setCreating(true)}
-        >
-          + New flow
-        </button>
-      </div>
+    <div className="page-shell ep-page flows-page">
+      <PageHeader
+        meta="Integration catalog"
+        title="Flows"
+        description="Versioned integration definitions. Design in the canvas, validate, deploy, and schedule."
+        actions={
+          <button type="button" className="btn btn--primary" onClick={() => setShowCreate(true)}>
+            New flow
+          </button>
+        }
+      />
 
-      {creating && (
-        <div className="flows-page__create-row">
-          <input
-            autoFocus
-            placeholder="Flow name"
-            value={newName}
-            onChange={(e) => setNewName(e.target.value)}
-            onKeyDown={(e) => { if (e.key === 'Enter') handleCreate(); if (e.key === 'Escape') setCreating(false) }}
+      {showCreate && (
+        <div className="flows-create-modal" role="dialog" aria-labelledby="flows-create-title">
+          <div className="flows-create-modal__backdrop" onClick={() => setShowCreate(false)} />
+          <div className="flows-create-modal__panel">
+            <h2 id="flows-create-title" className="flows-create-modal__title">Create flow</h2>
+            <p className="flows-create-modal__sub">You can add steps and connections in the designer.</p>
+            <input
+              autoFocus
+              className="flows-create-modal__input"
+              placeholder="e.g. CRM to warehouse sync"
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleCreate()
+                if (e.key === 'Escape') setShowCreate(false)
+              }}
+            />
+            <div className="flows-create-modal__actions">
+              <button type="button" className="btn btn--ghost" onClick={() => setShowCreate(false)}>
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="btn btn--primary"
+                onClick={handleCreate}
+                disabled={!newName.trim() || createMutation.isPending}
+              >
+                {createMutation.isPending ? 'Creating…' : 'Open designer'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <SurfaceCard noPadding>
+        <div className="flows-page__toolbar-wrap">
+          <div className="ep-toolbar">
+            <div className="ep-search">
+              <span className="ep-search__icon" aria-hidden>⌕</span>
+              <input
+                type="search"
+                placeholder="Search by name or ID…"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                aria-label="Search flows"
+              />
+            </div>
+            <div className="ep-chips" role="tablist" aria-label="Filter by status">
+              {STATUS_FILTERS.map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  role="tab"
+                  aria-selected={statusFilter === s}
+                  className={`ep-chip${statusFilter === s ? ' ep-chip--on' : ''}`}
+                  onClick={() => setStatusFilter(s)}
+                >
+                  {s === 'all' ? 'All' : s}
+                  <span className="flows-page__chip-count">{counts[s]}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {isLoading ? (
+          <div className="flows-page__loading">Loading flows…</div>
+        ) : filtered.length === 0 ? (
+          <EmptyPanel
+            icon="◇"
+            title={search || statusFilter !== 'all' ? 'No matching flows' : 'No flows yet'}
+            description={
+              search || statusFilter !== 'all'
+                ? 'Try a different search or clear filters.'
+                : 'Start with a name — we will open the designer for you.'
+            }
+            action={
+              !search && statusFilter === 'all' ? (
+                <button type="button" className="btn btn--primary" onClick={() => setShowCreate(true)}>
+                  New flow
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className="btn btn--ghost"
+                  onClick={() => { setSearch(''); setStatusFilter('all') }}
+                >
+                  Clear filters
+                </button>
+              )
+            }
           />
-          <button className="btn btn--primary" onClick={handleCreate} disabled={!newName.trim()}>
-            Create
-          </button>
-          <button className="btn btn--ghost" onClick={() => setCreating(false)}>
-            Cancel
-          </button>
-        </div>
-      )}
-
-      {isLoading ? (
-        <div className="flows-page__empty">Loading…</div>
-      ) : flows.length === 0 ? (
-        <div className="flows-page__empty">
-          No flows yet. Create one to get started.
-        </div>
-      ) : (
-        <table className="flows-table">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Flow ID</th>
-              <th>Status</th>
-              <th>Created</th>
-              <th>Last updated</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {flows.map((f) => (
-              <tr key={f.flow_id} className="flows-table__row" onClick={() => navigate(`/flows/${f.flow_id}`)}>
-                <td className="flows-table__name">{f.name}</td>
-                <td className="flows-table__id">{f.flow_id}</td>
-                <td><span className={statusBadge(f.status)}>{f.status}</span></td>
-                <td className="flows-table__ts">{fmtDate(f.created_at)}</td>
-                <td className="flows-table__ts">{fmtDate(f.updated_at)}</td>
-                <td onClick={(e) => e.stopPropagation()}>
-                  <button
-                    className="flows-table__delete"
-                    onClick={() => {
-                      if (confirm(`Delete "${f.name}"?`)) deleteMutation.mutate(f.flow_id)
-                    }}
-                    title="Delete"
+        ) : (
+          <div className="ep-table-wrap">
+            <table className="ep-table flows-table">
+              <thead>
+                <tr>
+                  <th>Flow</th>
+                  <th>Status</th>
+                  <th>Created</th>
+                  <th>Updated</th>
+                  <th className="flows-table__actions-col" />
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map((f) => (
+                  <tr
+                    key={f.flow_id}
+                    className="ep-table__row"
+                    onClick={() => navigate(`/flows/${f.flow_id}`)}
                   >
-                    ✕
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
+                    <td>
+                      <div className="ep-table__primary">{f.name}</div>
+                      <div className="ep-table__mono ep-table__secondary">{f.flow_id}</div>
+                    </td>
+                    <td><FlowStatusBadge status={f.status} /></td>
+                    <td className="flows-table__date">{fmtDate(f.created_at)}</td>
+                    <td className="flows-table__date">{fmtDate(f.updated_at)}</td>
+                    <td className="flows-table__actions-col" onClick={(e) => e.stopPropagation()}>
+                      <button
+                        type="button"
+                        className="flows-table__delete"
+                        title="Delete flow"
+                        onClick={() => {
+                          if (confirm(`Delete "${f.name}"? This cannot be undone.`)) {
+                            deleteMutation.mutate(f.flow_id)
+                          }
+                        }}
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </SurfaceCard>
     </div>
   )
 }

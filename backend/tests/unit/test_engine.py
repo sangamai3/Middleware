@@ -256,6 +256,37 @@ class TestFlowValidator:
         with pytest.raises(FlowValidationError, match="missing 'fields'"):
             FlowValidator(flow).validate()
 
+    def test_transform_format_is_known_step_type(self) -> None:
+        steps = [
+            make_step("src"),
+            StepConfig(
+                id="fmt",
+                type="transform_format",
+                depends_on=["src"],
+                config={"input_format": "csv", "output_format": "json"},
+            ),
+        ]
+        flow = make_flow(steps)
+        warnings = FlowValidator(flow).validate()
+        assert not any("unknown type" in w for w in warnings)
+
+    def test_scheduler_is_known_step_type(self) -> None:
+        flow = make_flow([
+            make_step(
+                "sched",
+                step_type="scheduler",
+                config={"cron": "0 9 * * 1-5", "schedule_summary": "Weekdays at 09:00"},
+            ),
+            make_step("log", config={"message": "ok"}, depends_on=["sched"]),
+        ])
+        warnings = FlowValidator(flow).validate()
+        assert not any("unknown type" in w for w in warnings)
+
+    def test_scheduler_without_schedule_warns(self) -> None:
+        flow = make_flow([make_step("sched", step_type="scheduler", config={})])
+        warnings = FlowValidator(flow).validate()
+        assert any("scheduler" in w and "cron" in w for w in warnings)
+
 
 # ---------------------------------------------------------------------------
 # FlowExecutor (integration with transform handlers)
@@ -271,6 +302,25 @@ class TestFlowExecutor:
         executor = FlowExecutor(bus=bus)
         run = executor.execute(flow)
         assert run.status == RunStatus.SUCCESS
+
+    def test_scheduler_then_logger_succeeds(self) -> None:
+        flow = make_flow([
+            make_step(
+                "sched",
+                step_type="scheduler",
+                config={"cron": "0 * * * *"},
+            ),
+            make_step(
+                "log",
+                step_type="logger",
+                config={"message": "after schedule"},
+                depends_on=["sched"],
+            ),
+        ])
+        run = FlowExecutor().execute(flow)
+        assert run.status == RunStatus.SUCCESS
+        assert run.steps[0].step_type == "scheduler"
+        assert run.steps[0].status == StepStatus.SUCCESS
 
     def test_unknown_step_type_fails(self) -> None:
         flow = make_flow([make_step("bad", step_type="nonexistent_type")])
