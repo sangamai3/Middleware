@@ -202,6 +202,11 @@
   color: var(--shell-sidebar-muted);
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  text-align: left;
 }
 
 .sidebar-theme:hover {

@@ -33,6 +33,7 @@ export function KpiGrid({
     value: string | number
     hint?: string
     tone?: 'default' | 'accent' | 'success' | 'danger' | 'warn'
+    onClick?: () => void
   }[]
 }) {
   return (
@@ -40,8 +41,11 @@ export function KpiGrid({
       {items.map((k) => (
         <div
           key={k.id}
-          className={`ep-kpi ep-kpi--${k.tone ?? 'default'}`}
-          role="listitem"
+          className={`ep-kpi ep-kpi--${k.tone ?? 'default'}${k.onClick ? ' ep-kpi--clickable' : ''}`}
+          role={k.onClick ? 'button' : 'listitem'}
+          tabIndex={k.onClick ? 0 : undefined}
+          onClick={k.onClick}
+          onKeyDown={k.onClick ? (e) => { if (e.key === 'Enter' || e.key === ' ') k.onClick!() } : undefined}
         >
           <div className="ep-kpi__label">{k.label}</div>
           <div className="ep-kpi__value">{k.value}</div>

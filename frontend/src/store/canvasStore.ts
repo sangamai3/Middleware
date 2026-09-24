@@ -24,6 +24,8 @@ interface CanvasStore {
   addNode: (node: CanvasNode) => void
   updateNodeData: (id: string, data: Partial<CanvasNodeData>) => void
   deleteNode: (id: string) => void
+  duplicateNode: (id: string) => void
+  autoLayout: () => void
 
   selectNode: (id: string | null) => void
 
@@ -112,6 +114,69 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
       selectedNodeId: get().selectedNodeId === id ? null : get().selectedNodeId,
     })
     markFlowDirty()
+  },
+
+  duplicateNode: (id) => {
+    const src = get().nodes.find((n) => n.id === id)
+    if (!src) return
+    const newId = `node_${Date.now()}_dup`
+    const copy: CanvasNode = {
+      ...src,
+      id: newId,
+      position: { x: src.position.x + 40, y: src.position.y + 60 },
+      data: { ...src.data, config: { ...(src.data.config as Record<string, unknown>) } },
+    }
+    set({ nodes: [...get().nodes, copy], selectedNodeId: newId })
+    markFlowDirty()
+  },
+
+  autoLayout: () => {
+    const { nodes, edges } = get()
+    if (nodes.length === 0) return
+
+    // Build incoming-degree and children maps
+    const inDeg = new Map<string, number>()
+    const children = new Map<string, string[]>()
+    nodes.forEach(n => { inDeg.set(n.id, 0); children.set(n.id, []) })
+    edges.forEach(e => {
+      inDeg.set(e.target, (inDeg.get(e.target) ?? 0) + 1)
+      children.get(e.source)?.push(e.target)
+    })
+
+    // BFS layer assignment (Kahn-style)
+    const layer = new Map<string, number>()
+    const queue: string[] = []
+    nodes.forEach(n => { if ((inDeg.get(n.id) ?? 0) === 0) { queue.push(n.id); layer.set(n.id, 0) } })
+
+    while (queue.length > 0) {
+      const id = queue.shift()!
+      const l = layer.get(id) ?? 0
+      for (const child of children.get(id) ?? []) {
+        layer.set(child, Math.max(layer.get(child) ?? 0, l + 1))
+        queue.push(child)
+      }
+    }
+    // Disconnected nodes get their own layer
+    let maxLayer = Math.max(0, ...[...layer.values()])
+    nodes.forEach(n => { if (!layer.has(n.id)) { layer.set(n.id, ++maxLayer) } })
+
+    // Group by layer
+    const byLayer = new Map<number, string[]>()
+    layer.forEach((l, id) => {
+      if (!byLayer.has(l)) byLayer.set(l, [])
+      byLayer.get(l)!.push(id)
+    })
+
+    const COL_W = 240, ROW_H = 115, START_X = 80
+    const posMap = new Map<string, { x: number; y: number }>()
+    byLayer.forEach((ids, l) => {
+      const total = ids.length * ROW_H
+      ids.forEach((id, i) => {
+        posMap.set(id, { x: START_X + l * COL_W, y: 60 + i * ROW_H - (total - ROW_H) / 2 })
+      })
+    })
+
+    set({ nodes: nodes.map(n => ({ ...n, position: posMap.get(n.id) ?? n.position })) })
   },
 
   selectNode: (id) => set({ selectedNodeId: id }),

@@ -1,4 +1,4 @@
-import { useCallback, useRef } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import {
   ReactFlow,
   Background,
@@ -8,6 +8,7 @@ import {
   ConnectionLineType,
   ConnectionMode,
   useReactFlow,
+  useViewport,
 } from '@xyflow/react'
 import type { Connection, Edge, Node } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
@@ -16,6 +17,15 @@ import { nodeTypes } from '../nodes/nodeTypes'
 import type { CanvasNodeData, NodeFamily } from '@/types'
 import type { CanvasNode } from '../nodes/BaseNode'
 import './FlowCanvas.css'
+
+function ZoomIndicator() {
+  const { zoom } = useViewport()
+  return (
+    <div className="flow-canvas__zoom-indicator" title="Current zoom level">
+      {Math.round(zoom * 100)}%
+    </div>
+  )
+}
 
 let nodeCounter = 1
 
@@ -34,11 +44,14 @@ const FAMILY_FOR_TYPE: Record<string, NodeFamily> = {
   global_exception: 'utility', component_exception: 'utility',
 }
 
+type ContextMenu = { x: number; y: number; nodeId: string; nodeLabel: string }
+
 export function FlowCanvas() {
-  const { nodes, edges, onNodesChange, onEdgesChange, onConnect, addNode, selectNode } =
+  const { nodes, edges, onNodesChange, onEdgesChange, onConnect, addNode, selectNode, deleteNode, duplicateNode } =
     useCanvasStore()
   const { screenToFlowPosition } = useReactFlow()
   const dropRef = useRef<HTMLDivElement>(null)
+  const [contextMenu, setContextMenu] = useState<ContextMenu | null>(null)
 
   const onDrop = useCallback(
     (e: React.DragEvent) => {
@@ -75,7 +88,20 @@ export function FlowCanvas() {
     [selectNode],
   )
 
-  const onPaneClick = useCallback(() => selectNode(null), [selectNode])
+  const onPaneClick = useCallback(() => {
+    selectNode(null)
+    setContextMenu(null)
+  }, [selectNode])
+
+  const onNodeContextMenu = useCallback(
+    (e: React.MouseEvent, node: Node) => {
+      e.preventDefault()
+      selectNode(node.id)
+      const label = String((node.data as CanvasNodeData).label ?? node.id)
+      setContextMenu({ x: e.clientX, y: e.clientY, nodeId: node.id, nodeLabel: label })
+    },
+    [selectNode],
+  )
 
   const isValidConnection = useCallback(
     (edge: Connection | Edge) => edge.source !== edge.target,
@@ -93,6 +119,7 @@ export function FlowCanvas() {
         onConnect={onConnect}
         onNodeClick={onNodeClick}
         onPaneClick={onPaneClick}
+        onNodeContextMenu={onNodeContextMenu}
         isValidConnection={isValidConnection}
         connectionMode={ConnectionMode.Loose}
         connectionRadius={48}
@@ -119,6 +146,7 @@ export function FlowCanvas() {
       >
         <Background variant={BackgroundVariant.Dots} gap={20} size={1} color="var(--border-subtle)" />
         <Controls showInteractive={false} />
+        <ZoomIndicator />
         <MiniMap
           nodeColor={(n) => {
             const family = (n.data as CanvasNodeData).family
@@ -135,6 +163,30 @@ export function FlowCanvas() {
       {nodes.length === 0 && (
         <div className="flow-canvas__empty">
           <p>Drag a node from the palette to start building your flow</p>
+        </div>
+      )}
+
+      {contextMenu && (
+        <div
+          className="canvas-context-menu"
+          style={{ top: contextMenu.y, left: contextMenu.x }}
+          onMouseLeave={() => setContextMenu(null)}
+        >
+          <div className="canvas-context-menu__label">{contextMenu.nodeLabel}</div>
+          <button
+            type="button"
+            className="canvas-context-menu__item"
+            onClick={() => { duplicateNode(contextMenu.nodeId); setContextMenu(null) }}
+          >
+            <span>⧉</span> Duplicate  <kbd>⌘D</kbd>
+          </button>
+          <button
+            type="button"
+            className="canvas-context-menu__item canvas-context-menu__item--danger"
+            onClick={() => { deleteNode(contextMenu.nodeId); setContextMenu(null) }}
+          >
+            <span>✕</span> Delete  <kbd>Del</kbd>
+          </button>
         </div>
       )}
     </div>

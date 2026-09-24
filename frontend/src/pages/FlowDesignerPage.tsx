@@ -83,8 +83,15 @@ export function FlowDesignerPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { currentFlow, setFlow, isDirty, markClean } = useFlowStore()
-  const { nodes, edges, setNodes, setEdges } = useCanvasStore()
+  const { nodes, edges, setNodes, setEdges, selectedNodeId, deleteNode, duplicateNode } = useCanvasStore()
   const loadedFlowId = useRef<string | null>(null)
+  // Keep refs for keyboard handler so closure doesn't stale
+  const nodesRef = useRef(nodes)
+  const edgesRef = useRef(edges)
+  const isDirtyRef = useRef(isDirty)
+  useEffect(() => { nodesRef.current = nodes }, [nodes])
+  useEffect(() => { edgesRef.current = edges }, [edges])
+  useEffect(() => { isDirtyRef.current = isDirty }, [isDirty])
 
   useEffect(() => {
     if (!id) return
@@ -121,6 +128,48 @@ export function FlowDesignerPage() {
     window.addEventListener('beforeunload', onBeforeUnload)
     return () => window.removeEventListener('beforeunload', onBeforeUnload)
   }, [isDirty])
+
+  // Keyboard shortcuts
+  const flowIdRef = useRef(id ?? '')
+  const flowNameRef = useRef('')
+  useEffect(() => { flowIdRef.current = currentFlow?.flow_id ?? id ?? '' }, [currentFlow, id])
+  useEffect(() => { flowNameRef.current = currentFlow?.name ?? '' }, [currentFlow])
+
+  const selectedNodeIdRef = useRef<string | null>(null)
+  useEffect(() => { selectedNodeIdRef.current = selectedNodeId }, [selectedNodeId])
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement
+      const inInput = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT' || target.isContentEditable
+      const ctrl = e.metaKey || e.ctrlKey
+
+      // Ctrl+S — save
+      if (ctrl && e.key === 's') {
+        e.preventDefault()
+        const fid = flowIdRef.current
+        const fname = flowNameRef.current
+        if (!fid || !fname) return
+        const definition = buildFlowDefinition(fid, fname, nodesRef.current, edgesRef.current)
+        flowsApi.update(fid, definition).then(() => markClean()).catch(() => {})
+      }
+
+      // Delete / Backspace — delete selected node (only when not in an input)
+      if (!inInput && (e.key === 'Delete' || e.key === 'Backspace')) {
+        const sel = selectedNodeIdRef.current
+        if (sel) deleteNode(sel)
+      }
+
+      // Ctrl+D — duplicate selected node
+      if (ctrl && e.key === 'd') {
+        e.preventDefault()
+        const sel = selectedNodeIdRef.current
+        if (sel) duplicateNode(sel)
+      }
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [markClean, deleteNode, duplicateNode])
 
   return (
     <ReactFlowProvider>

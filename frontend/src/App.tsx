@@ -1,6 +1,8 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { AppHeader } from '@/components/ui/AppHeader'
 import { ProtectedRoute } from '@/components/ui/ProtectedRoute'
+import { ToastProvider } from '@/components/ui/Toast'
+import { CommandPalette } from '@/components/ui/CommandPalette'
 import { FlowsPage } from '@/pages/FlowsPage'
 import { FlowDesignerPage } from '@/pages/FlowDesignerPage'
 import { RunsPage } from '@/pages/RunsPage'
@@ -30,6 +32,8 @@ function AppShell({ children }: { children: React.ReactNode }) {
 
 export default function App() {
   return (
+    <ToastProvider>
+    <CommandPalette />
     <Routes>
       {/* Public */}
       <Route path="/login" element={<LoginPage />} />
@@ -129,5 +133,6 @@ export default function App() {
       {/* Fallback */}
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>
+    </ToastProvider>
   )
 }

@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from typing import Any
 
+import yaml
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
@@ -29,6 +30,7 @@ class GenerateFlowRequest(BaseModel):
 
 class GenerateFlowResponse(BaseModel):
     flow_yaml: str
+    flow_definition: dict[str, Any] = {}
     provider: str
     model: str
 
@@ -66,8 +68,14 @@ async def generate_flow(
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Flow generation failed: {exc}") from exc
 
+    try:
+        flow_definition = yaml.safe_load(yaml_str) or {}
+    except Exception:
+        flow_definition = {}
+
     return {
         "flow_yaml": yaml_str,
+        "flow_definition": flow_definition,
         "provider": body.provider,
         "model": gen._resolve_model(),
     }

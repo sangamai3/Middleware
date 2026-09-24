@@ -4,6 +4,7 @@ import type { CanvasNodeData } from '@/types'
 import { ConnectorNodeConfig } from './ConnectorNodeConfig'
 import { DataPreviewPanel } from './DataPreviewPanel'
 import { SchedulerNodeConfig } from './SchedulerNodeConfig'
+import { FieldMapper } from './FieldMapper'
 import './ConfigPanel.css'
 import './ConnectorNodeConfig.css'
 
@@ -117,9 +118,11 @@ function FormatConvertConfig({
 function StepConfigForm({
   data,
   onUpdate,
+  previewColumns,
 }: {
   data: CanvasNodeData
   onUpdate: (patch: Partial<CanvasNodeData>) => void
+  previewColumns?: { name: string; data_type: string }[]
 }) {
   const updateConfig = (key: string, value: string) => {
     onUpdate({ config: { ...data.config, [key]: value } })
@@ -147,6 +150,10 @@ function StepConfigForm({
 
       {data.stepType === 'transform_format' && (
         <FormatConvertConfig data={data} onUpdate={onUpdate} />
+      )}
+
+      {data.stepType === 'transform_map' && (
+        <FieldMapper data={data} onUpdate={onUpdate} previewColumns={previewColumns} />
       )}
 
       {data.stepType === 'transform_filter' && (
@@ -223,9 +230,13 @@ export function ConfigPanel({ flowId, flowName }: ConfigPanelProps) {
   const { nodes, edges, selectedNodeId, updateNodeData, deleteNode } = useCanvasStore()
   const node = nodes.find((n) => n.id === selectedNodeId)
   const [collapsed, setCollapsed] = useState(false)
+  const [previewColumns, setPreviewColumns] = useState<{ name: string; data_type: string }[]>([])
 
   useEffect(() => {
-    if (selectedNodeId) setCollapsed(false)
+    if (selectedNodeId) {
+      setCollapsed(false)
+      setPreviewColumns([])
+    }
   }, [selectedNodeId])
 
   if (collapsed) {
@@ -294,6 +305,7 @@ export function ConfigPanel({ flowId, flowName }: ConfigPanelProps) {
         <StepConfigForm
           data={node.data}
           onUpdate={(patch) => updateNodeData(node.id, patch)}
+          previewColumns={previewColumns}
         />
 
         <DataPreviewPanel
@@ -304,6 +316,7 @@ export function ConfigPanel({ flowId, flowName }: ConfigPanelProps) {
           stepLabel={String(node.data.label ?? '')}
           nodes={nodes}
           edges={edges}
+          onColumns={setPreviewColumns}
         />
 
         {node.data.status === 'failed' && node.data.error && (

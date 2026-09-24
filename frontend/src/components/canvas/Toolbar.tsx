@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useCanvasStore } from '@/store/canvasStore'
 import { useFlowStore } from '@/store/flowStore'
 import { flowsApi, runsApi } from '@/api/flows'
@@ -8,6 +9,21 @@ import type { CanvasNode } from '@/components/nodes/BaseNode'
 import clsx from 'clsx'
 import { FlowDockerComposeModal } from './FlowDockerComposeModal'
 import './Toolbar.css'
+
+function useRelativeTime(ts: number | null): string {
+  const [, setTick] = useState(0)
+  useEffect(() => {
+    if (!ts) return
+    const id = setInterval(() => setTick((n) => n + 1), 30_000)
+    return () => clearInterval(id)
+  }, [ts])
+  if (!ts) return ''
+  const diff = Date.now() - ts
+  if (diff < 10_000) return 'just now'
+  if (diff < 60_000) return `${Math.floor(diff / 1000)}s ago`
+  if (diff < 3_600_000) return `${Math.floor(diff / 60_000)}m ago`
+  return `${Math.floor(diff / 3_600_000)}h ago`
+}
 
 type ValidationResult = {
   valid: boolean
@@ -45,10 +61,14 @@ export function Toolbar({ flowId, flowName, initialStatus }: Props) {
     setRunPanelOpen,
     applyFlowEvent,
     resetRunState,
+    autoLayout,
   } = useCanvasStore()
   const { isDirty, markClean } = useFlowStore()
   const [status, setStatus] = useState<string>('')
   const [saving, setSaving] = useState(false)
+  const [lastSavedAt, setLastSavedAt] = useState<number | null>(null)
+  const savedLabel = useRelativeTime(lastSavedAt)
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [validation, setValidation] = useState<ValidationResult | null>(null)
   const [validationPanelOpen, setValidationPanelOpen] = useState(false)
   const [deploying, setDeploying] = useState(false)
@@ -71,8 +91,10 @@ export function Toolbar({ flowId, flowName, initialStatus }: Props) {
       const definition = buildFlowDefinition(flowId, flowName, nodes, edges)
       await flowsApi.update(flowId, definition)
       markClean()
+      setLastSavedAt(Date.now())
       setStatus('Saved')
-      setTimeout(() => setStatus(''), 2000)
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current)
+      saveTimerRef.current = setTimeout(() => setStatus(''), 2000)
     } catch (err) {
       setStatus('Save failed')
     } finally {
@@ -206,11 +228,16 @@ export function Toolbar({ flowId, flowName, initialStatus }: Props) {
     <div className="toolbar-wrap">
     <div className="toolbar">
       <div className="toolbar__left">
+        <Link to="/flows" className="toolbar__breadcrumb">Flows</Link>
+        <span className="toolbar__breadcrumb-sep">/</span>
         <span className="toolbar__flow-name">{flowName}</span>
         {flowStatus === 'deployed' && (
           <span className="toolbar__deployed-pill">deployed</span>
         )}
-        {isDirty && <span className="toolbar__dirty">●</span>}
+        {isDirty
+          ? <span className="toolbar__dirty" title="Unsaved changes">●</span>
+          : lastSavedAt && <span className="toolbar__saved-at">Saved {savedLabel}</span>
+        }
       </div>
 
       <div className="toolbar__center">
@@ -227,6 +254,15 @@ export function Toolbar({ flowId, flowName, initialStatus }: Props) {
       </div>
 
       <div className="toolbar__right">
+        <button
+          type="button"
+          className="toolbar__btn toolbar__btn--ghost"
+          onClick={autoLayout}
+          disabled={nodes.length < 2}
+          title="Auto-arrange nodes in left-to-right DAG layout"
+        >
+          Arrange
+        </button>
         <button
           className="toolbar__btn toolbar__btn--ghost"
           onClick={handleValidate}

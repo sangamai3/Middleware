@@ -25,6 +25,7 @@ from .routes import scim as scim_routes
 from .routes import notifications as notification_routes
 from .routes import insights as insight_routes
 from .routes import scheduler as scheduler_routes
+from .routes import schema as schema_routes
 from .routes import templates as template_routes
 from .routes import users as user_routes
 
@@ -99,6 +100,7 @@ app.include_router(portal_routes.router, prefix="/api/v1")
 app.include_router(notification_routes.router, prefix="/api/v1")
 app.include_router(scheduler_routes.router, prefix="/api/v1")
 app.include_router(insight_routes.router, prefix="/api/v1")
+app.include_router(schema_routes.router, prefix="/api/v1")
 app.include_router(health_routes.router)
 app.include_router(scim_routes.router)
 

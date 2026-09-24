@@ -1,4 +1,19 @@
 /* Dashboard uses shared enterprise page chrome; local tweaks only */
+.dash-run-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 99px;
+  white-space: nowrap;
+  text-transform: capitalize;
+}
+.dash-run-badge--pass { background: color-mix(in srgb, var(--pass) 14%, transparent); color: var(--pass); }
+.dash-run-badge--fail { background: color-mix(in srgb, var(--fail) 14%, transparent); color: var(--fail); }
+.dash-run-badge--warn { background: color-mix(in srgb, var(--warn) 14%, transparent); color: var(--warn); }
+
 .dashboard .ep-kpi-grid {
   grid-template-columns: repeat(5, minmax(0, 1fr));
 }

@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useCanvasStore } from '@/store/canvasStore'
 import { stepTimelineTitle } from '@/lib/stepDisplay'
@@ -37,6 +38,7 @@ export function RunResultsPanel() {
     runPanelOpen,
     setRunPanelOpen,
   } = useCanvasStore()
+  const [expandedStep, setExpandedStep] = useState<string | null>(null)
 
   const showBar = isRunning || runResult || runId
 
@@ -135,20 +137,34 @@ export function RunResultsPanel() {
             stepTimelineTitle(step as StepExecution)
           const nodeLabel = nodes.find((n) => n.id === step.step_id)?.data.label
           const title = nodeLabel && nodeLabel !== label ? `${label} (${step.step_id})` : label
+          const isExpanded = expandedStep === step.step_id
+          const hasDetail = !!(step.error_message || (step.rows_out != null && step.rows_out > 0))
           return (
-            <div key={step.step_id} className="run-results__step">
+            <div
+              key={step.step_id}
+              className={`run-results__step${hasDetail ? ' run-results__step--expandable' : ''}${isExpanded ? ' run-results__step--open' : ''}`}
+              onClick={() => hasDetail && setExpandedStep(isExpanded ? null : step.step_id)}
+            >
               <span className="run-results__step-name" title={step.step_id}>{title}</span>
               <span className={`run-results__badge run-results__badge--sm ${statusClass(step.status)}`}>
                 {step.status}
               </span>
               {step.rows_out != null && step.rows_out > 0 && (
-                <span className="run-results__step-rows">{step.rows_out} rows</span>
+                <span className="run-results__step-rows">{step.rows_out.toLocaleString()} rows</span>
               )}
               <span className="run-results__step-dur">{stepDuration(step as StepExecution)}</span>
-              {step.error_message && (
-                <span className="run-results__step-err" title={step.error_message}>
-                  {step.error_message.slice(0, 80)}
-                </span>
+              {hasDetail && (
+                <span className="run-results__step-chevron">{isExpanded ? '▴' : '▾'}</span>
+              )}
+              {isExpanded && step.error_message && (
+                <div className="run-results__step-detail run-results__step-detail--err">
+                  {step.error_message}
+                </div>
+              )}
+              {isExpanded && !step.error_message && step.rows_out != null && (
+                <div className="run-results__step-detail">
+                  {step.rows_out.toLocaleString()} rows emitted · {stepDuration(step as StepExecution)}
+                </div>
               )}
             </div>
           )

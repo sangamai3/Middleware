@@ -30,3 +30,66 @@
   color: var(--text-muted);
   font-size: 13px;
 }
+
+/* Zoom % indicator */
+.flow-canvas__zoom-indicator {
+  position: absolute;
+  bottom: 56px;
+  left: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+  z-index: 5;
+  box-shadow: var(--shadow-sm);
+}
+
+/* Right-click context menu */
+.canvas-context-menu {
+  position: fixed;
+  z-index: 1000;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md);
+  min-width: 160px;
+  overflow: hidden;
+}
+.canvas-context-menu__label {
+  padding: 6px 12px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+}
+.canvas-context-menu__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+}
+.canvas-context-menu__item:hover { background: var(--surface-2); }
+.canvas-context-menu__item--danger { color: var(--fail); }
+.canvas-context-menu__item--danger:hover { background: color-mix(in srgb, var(--fail) 8%, transparent); }
+.canvas-context-menu__item kbd {
+  font-size: 10px;
+  opacity: 0.6;
+  font-family: inherit;
+  margin-left: auto;
+}

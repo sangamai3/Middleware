@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '@/store/authStore'
 import { authApi } from '@/api/auth'
@@ -11,10 +12,8 @@ const ROLE_COLORS: Record<string, string> = {
   viewer: '#A9B4BE',
 }
 
-function toggleTheme() {
-  const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'
-  document.documentElement.dataset.theme = next
-  localStorage.setItem('sangam_mw.theme', next)
+function getTheme() {
+  return (document.documentElement.dataset.theme as 'dark' | 'light' | undefined) ?? 'light'
 }
 
 function NavItem({ to, icon, label }: { to: string; icon: React.ReactNode; label: string }) {
@@ -32,6 +31,14 @@ function NavItem({ to, icon, label }: { to: string; icon: React.ReactNode; label
 export function AppHeader() {
   const navigate = useNavigate()
   const { user, logout, isAuthenticated } = useAuthStore()
+  const [theme, setTheme] = useState<'dark' | 'light'>(getTheme)
+
+  function toggleTheme() {
+    const next = theme === 'dark' ? 'light' : 'dark'
+    document.documentElement.dataset.theme = next
+    localStorage.setItem('sangam_mw.theme', next)
+    setTheme(next)
+  }
 
   async function handleLogout() {
     try { await authApi.logout() } catch {}
@@ -174,8 +181,25 @@ export function AppHeader() {
       {/* User footer */}
       {isAuthenticated() && user && (
         <div className="sidebar-footer">
-          <button type="button" className="sidebar-theme" onClick={toggleTheme}>
-            Toggle light / dark theme
+          <button type="button" className="sidebar-theme" onClick={toggleTheme} title="Toggle light / dark theme">
+            {theme === 'dark' ? (
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" width="14" height="14">
+                <circle cx="8" cy="8" r="3.5"/>
+                <line x1="8" y1="1" x2="8" y2="2.5"/>
+                <line x1="8" y1="13.5" x2="8" y2="15"/>
+                <line x1="1" y1="8" x2="2.5" y2="8"/>
+                <line x1="13.5" y1="8" x2="15" y2="8"/>
+                <line x1="3.05" y1="3.05" x2="4.12" y2="4.12"/>
+                <line x1="11.88" y1="11.88" x2="12.95" y2="12.95"/>
+                <line x1="12.95" y1="3.05" x2="11.88" y2="4.12"/>
+                <line x1="4.12" y1="11.88" x2="3.05" y2="12.95"/>
+              </svg>
+            ) : (
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" width="14" height="14">
+                <path d="M13.5 9.5A6 6 0 016.5 2.5a6 6 0 100 11 6 6 0 007-4z"/>
+              </svg>
+            )}
+            <span>{theme === 'dark' ? 'Light mode' : 'Dark mode'}</span>
           </button>
           <div className="sidebar-user">
             <div className="sidebar-avatar" title={user.email}>

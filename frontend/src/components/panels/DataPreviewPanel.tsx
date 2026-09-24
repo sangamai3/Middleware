@@ -26,6 +26,7 @@ interface Props {
   stepLabel: string
   nodes: CanvasNode[]
   edges: Edge[]
+  onColumns?: (cols: { name: string; data_type: string }[]) => void
 }
 
 export function DataPreviewPanel({
@@ -36,6 +37,7 @@ export function DataPreviewPanel({
   stepLabel,
   nodes,
   edges,
+  onColumns,
 }: Props) {
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<FlowPreviewResult | null>(null)
@@ -56,6 +58,7 @@ export function DataPreviewPanel({
         setResult(data)
       } else {
         setResult(data)
+        if (data.columns?.length) onColumns?.(data.columns)
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Preview failed')
