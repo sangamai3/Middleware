@@ -50,6 +50,10 @@ export const useAuthStore = create<AuthState>()(
     {
       name: 'sangam_auth',
       partialize: (state) => ({ token: state.token, user: state.user }),
+      onRehydrateStorage: () => (state) => {
+        if (state?.token) setToken(state.token)
+        else clearToken()
+      },
     },
   ),
 )

@@ -1,11 +1,223 @@
-.fm {
-  padding: 4px 0;
+/* ═══════════════════════════════════════════════════════════════
+   Compact card (shown in the config panel)
+═══════════════════════════════════════════════════════════════ */
+
+.fm-compact {
   display: flex;
   flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+}
+
+.fm-compact__meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.fm-compact__badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 99px;
+  letter-spacing: 0.02em;
+}
+.fm-compact__badge--src  { background: color-mix(in srgb, var(--accent) 12%, transparent); color: var(--accent); }
+.fm-compact__badge--tgt  { background: color-mix(in srgb, var(--pass) 14%, transparent);   color: var(--pass); }
+.fm-compact__badge--empty { background: var(--surface-2); color: var(--text-muted); }
+
+.fm-compact__meta-arrow { color: var(--text-muted); font-size: 12px; }
+
+.fm-compact__rules {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.fm-compact__rule {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.fm-compact__rule code {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  background: var(--surface-2);
+  padding: 1px 5px;
+  border-radius: 3px;
+  color: var(--text);
+}
+.fm-compact__fn {
+  font-size: 9px;
+  font-family: 'IBM Plex Mono', monospace;
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  color: var(--accent);
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+
+.fm-compact__more {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-style: italic;
+  padding-left: 2px;
+}
+
+.fm-compact__empty {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.fm-compact__open {
+  width: 100%;
+  padding: 9px 12px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  letter-spacing: 0.01em;
+  transition: opacity 0.12s;
+}
+.fm-compact__open:hover { opacity: 0.88; }
+
+
+/* ═══════════════════════════════════════════════════════════════
+   Modal backdrop + window
+═══════════════════════════════════════════════════════════════ */
+
+.fm-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  backdrop-filter: blur(2px);
+}
+
+.fm-modal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  width: min(92vw, 1080px);
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 24px 72px rgba(0, 0, 0, 0.28);
+}
+
+/* ── Modal header ── */
+.fm-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
   gap: 12px;
 }
 
-/* ─── Schema section ─── */
+.fm-modal__titles {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.fm-modal__title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.fm-modal__subtitle {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.fm-modal__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.fm-modal__close {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.1s;
+  flex-shrink: 0;
+}
+.fm-modal__close:hover { border-color: var(--fail); color: var(--fail); }
+
+/* ── Modal body ── */
+.fm-modal__body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ── Two-column schema section ── */
+.fm-modal__schemas {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+/* ── Wider mapping rows inside modal ── */
+.fm-mapping-header {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+.fm-mapping-row--modal {
+  padding: 10px 12px;
+}
+.fm-mapping-row--modal .fm-mapping-fields {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   Schema section (used inside modal)
+═══════════════════════════════════════════════════════════════ */
+
 .fm-schema {
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
@@ -20,6 +232,7 @@
   background: var(--surface-2);
   border-bottom: 1px solid var(--border);
   gap: 6px;
+  flex-wrap: wrap;
 }
 
 .fm-schema__label {
@@ -33,12 +246,13 @@
 .fm-schema__actions {
   display: flex;
   gap: 4px;
+  flex-wrap: wrap;
 }
 
 .fm-schema__empty {
   font-size: 11px;
   color: var(--text-muted);
-  padding: 10px;
+  padding: 12px;
   text-align: center;
   font-style: italic;
 }
@@ -46,7 +260,6 @@
 .fm-field-list {
   display: flex;
   flex-direction: column;
-  gap: 0;
 }
 
 .fm-field-row {
@@ -68,11 +281,7 @@
   font-family: 'IBM Plex Mono', monospace;
   color: var(--text);
 }
-.fm-field-name:focus {
-  outline: none;
-  border-color: var(--accent);
-  background: var(--surface-2);
-}
+.fm-field-name:focus { outline: none; border-color: var(--accent); background: var(--surface-2); }
 
 .fm-field-type {
   width: 80px;
@@ -96,7 +305,11 @@
 }
 .fm-field-del:hover { color: var(--fail); }
 
-/* ─── Sample infer box ─── */
+
+/* ═══════════════════════════════════════════════════════════════
+   Sample infer box
+═══════════════════════════════════════════════════════════════ */
+
 .fm-sample-box {
   padding: 8px;
   border-bottom: 1px solid var(--border);
@@ -117,10 +330,15 @@
   color: var(--text);
   resize: vertical;
   line-height: 1.5;
+  box-sizing: border-box;
 }
 .fm-sample-ta:focus { outline: none; border-color: var(--accent); }
 
-/* ─── Section (mappings) ─── */
+
+/* ═══════════════════════════════════════════════════════════════
+   Mapping rules section
+═══════════════════════════════════════════════════════════════ */
+
 .fm-section {
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
@@ -148,15 +366,11 @@
 .fm-empty {
   font-size: 11px;
   color: var(--text-muted);
-  padding: 12px;
+  padding: 14px;
   text-align: center;
 }
 
-/* ─── Mapping rows ─── */
-.fm-mapping-list {
-  display: flex;
-  flex-direction: column;
-}
+.fm-mapping-list { display: flex; flex-direction: column; }
 
 .fm-mapping-row {
   padding: 8px 10px;
@@ -166,24 +380,8 @@
 
 .fm-mapping-fields {
   display: flex;
-  align-items: flex-end;
-  gap: 5px;
-}
-
-.fm-mapping-col {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  flex: 1;
-  min-width: 0;
-}
-
-.fm-col-label {
-  font-size: 9px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--text-muted);
+  align-items: center;
+  gap: 6px;
 }
 
 .fm-select,
@@ -191,20 +389,19 @@
   background: var(--surface-2);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  padding: 4px 6px;
-  font-size: 11px;
+  padding: 5px 7px;
+  font-size: 12px;
   color: var(--text);
   width: 100%;
 }
-.fm-select:focus,
-.fm-input:focus { outline: none; border-color: var(--accent); }
+.fm-select:focus, .fm-input:focus { outline: none; border-color: var(--accent); }
 .fm-input { font-family: 'IBM Plex Mono', monospace; }
 
 .fm-arrow {
   color: var(--text-muted);
-  font-size: 12px;
-  padding-bottom: 5px;
+  font-size: 13px;
   flex-shrink: 0;
+  padding: 0 2px;
 }
 
 .fm-del {
@@ -212,19 +409,20 @@
   border: none;
   cursor: pointer;
   color: var(--text-muted);
-  font-size: 15px;
-  padding: 0 2px;
-  padding-bottom: 4px;
-  transition: color 0.1s;
+  font-size: 16px;
+  padding: 0 4px;
   flex-shrink: 0;
+  transition: color 0.1s;
+  line-height: 1;
 }
 .fm-del:hover { color: var(--fail); }
+
 
 /* ─── Transform args ─── */
 .fm-fn-args {
   display: flex;
-  gap: 6px;
-  margin-top: 6px;
+  gap: 8px;
+  margin-top: 8px;
   flex-wrap: wrap;
 }
 
@@ -232,7 +430,7 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
-  min-width: 80px;
+  min-width: 100px;
   flex: 1;
 }
 
@@ -248,28 +446,32 @@
   background: var(--surface-2);
   border: 1px solid var(--accent);
   border-radius: var(--radius-sm);
-  padding: 3px 6px;
+  padding: 4px 7px;
   font-size: 11px;
   font-family: 'IBM Plex Mono', monospace;
   color: var(--text);
 }
 .fm-fn-arg__input:focus { outline: none; box-shadow: 0 0 0 2px var(--accent-dim); }
 
+
 /* ─── Drop unmapped toggle ─── */
 .fm-toggle {
   display: flex;
   align-items: center;
   gap: 7px;
-  padding: 8px 10px;
+  padding: 9px 12px;
   border-top: 1px solid var(--border);
   cursor: pointer;
   font-size: 11px;
   color: var(--text-muted);
 }
 .fm-toggle input[type='checkbox'] { accent-color: var(--accent); }
-.fm-toggle__label { cursor: pointer; }
 
-/* ─── Summary ─── */
+
+/* ═══════════════════════════════════════════════════════════════
+   Summary
+═══════════════════════════════════════════════════════════════ */
+
 .fm-summary {
   border: 1px solid color-mix(in srgb, var(--pass) 30%, var(--border));
   border-radius: var(--radius-sm);
@@ -282,7 +484,7 @@
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--pass);
-  padding: 5px 10px;
+  padding: 6px 12px;
   background: color-mix(in srgb, var(--pass) 8%, transparent);
   border-bottom: 1px solid color-mix(in srgb, var(--pass) 15%, transparent);
 }
@@ -291,7 +493,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 4px 10px;
+  padding: 5px 12px;
   font-size: 11px;
   border-bottom: 1px solid var(--border);
   color: var(--text-muted);
@@ -301,10 +503,11 @@
   font-family: 'IBM Plex Mono', monospace;
   font-size: 10px;
   background: var(--surface-2);
-  padding: 1px 4px;
+  padding: 1px 5px;
   border-radius: 3px;
   color: var(--text);
 }
+
 .fm-summary__fn {
   font-size: 9px;
   font-family: 'IBM Plex Mono', monospace;
@@ -313,24 +516,14 @@
   padding: 1px 5px;
   border-radius: 3px;
 }
-.fm-summary__arr { color: var(--text-muted); font-size: 11px; }
 
-/* ─── Type badges ─── */
-.fm-type {
-  font-size: 9px;
-  font-family: 'IBM Plex Mono', monospace;
-  padding: 1px 4px;
-  border-radius: 3px;
-  font-weight: 600;
-}
-.fm-type--string   { background: #eff6ff; color: #1d4ed8; }
-.fm-type--integer  { background: #ecfdf5; color: #15803d; }
-.fm-type--number   { background: #ecfdf5; color: #15803d; }
-.fm-type--boolean  { background: #fef3c7; color: #92400e; }
-.fm-type--date     { background: #f5f3ff; color: #6d28d9; }
-.fm-type--datetime { background: #f5f3ff; color: #6d28d9; }
+.fm-summary__arr { color: var(--text-muted); font-size: 12px; }
 
-/* ─── Shared buttons ─── */
+
+/* ═══════════════════════════════════════════════════════════════
+   Shared buttons
+═══════════════════════════════════════════════════════════════ */
+
 .fm-btn {
   font-size: 11px;
   font-weight: 600;
@@ -340,12 +533,14 @@
   border: 1px solid var(--border);
   transition: all 0.12s;
   white-space: nowrap;
+  line-height: 1.4;
 }
 .fm-btn--ghost {
   background: none;
   color: var(--text-muted);
 }
-.fm-btn--ghost:hover { border-color: var(--accent); color: var(--accent); }
+.fm-btn--ghost:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+.fm-btn--ghost:disabled { opacity: 0.5; cursor: default; }
 
 .fm-btn--accent {
   background: var(--accent);
@@ -371,5 +566,175 @@
   color: var(--fail);
   background: color-mix(in srgb, var(--fail) 8%, transparent);
   padding: 6px 10px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid color-mix(in srgb, var(--fail) 20%, transparent);
+}
+
+/* ─── Responsive: stack schemas on narrow screens ─── */
+@media (max-width: 640px) {
+  .fm-modal__schemas { grid-template-columns: 1fr; }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   Drag & drop
+═══════════════════════════════════════════════════════════════ */
+
+/* Drag handle on source rows */
+.fm-drag-handle {
+  color: var(--text-muted);
+  font-size: 13px;
+  cursor: grab;
+  user-select: none;
+  padding: 0 2px;
+  flex-shrink: 0;
+  opacity: 0.45;
+  transition: opacity 0.1s;
+}
+.fm-field-row--src:hover .fm-drag-handle { opacity: 1; }
+.fm-field-row--src[draggable='true'] { cursor: grab; }
+.fm-field-row--src:active { cursor: grabbing; }
+
+/* Mapped indicator dot */
+.fm-mapped-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-right: 1px;
+}
+
+/* Source field that has an active mapping */
+.fm-field-row--mapped {
+  background: color-mix(in srgb, var(--accent) 4%, transparent);
+}
+
+/* When any drag is in progress, illuminate target schema */
+.fm-schema--drop-active {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-dim);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+/* Each target row becomes a drop zone during drag */
+.fm-field-row--droppable {
+  cursor: copy;
+  transition: background 0.1s;
+}
+.fm-field-row--droppable:hover {
+  background: color-mix(in srgb, var(--accent) 7%, transparent);
+}
+
+/* The specific row being hovered while dragging */
+.fm-field-row--drop-over {
+  background: color-mix(in srgb, var(--accent) 16%, transparent) !important;
+  border-left: 2px solid var(--accent);
+  padding-left: 6px;
+}
+
+/* Section count badge */
+.fm-section__count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent);
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  border-radius: 99px;
+  padding: 1px 6px;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+/* Drag hint banner */
+.fm-drag-hint {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 12px;
+  background: color-mix(in srgb, var(--accent) 7%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 20%, transparent);
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  color: var(--accent);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   Generated YAML code section
+═══════════════════════════════════════════════════════════════ */
+
+.fm-code-section {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.fm-code-toggle {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  width: 100%;
+  padding: 8px 12px;
+  background: var(--surface-2);
+  border: none;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-align: left;
+  transition: color 0.1s;
+}
+.fm-code-toggle:hover { color: var(--text); }
+
+.fm-code-toggle__icon {
+  font-size: 10px;
+  flex-shrink: 0;
+}
+
+.fm-code-toggle__badge {
+  margin-left: auto;
+  font-size: 9px;
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: var(--accent);
+  padding: 1px 7px;
+  border-radius: 99px;
+  font-weight: 700;
+}
+
+.fm-code-body {
+  position: relative;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+}
+
+.fm-code-copy {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 3px 10px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: all 0.1s;
+  z-index: 1;
+}
+.fm-code-copy:hover { border-color: var(--accent); color: var(--accent); }
+
+.fm-code-pre {
+  margin: 0;
+  padding: 12px 14px;
+  padding-right: 80px;
+  font-family: 'IBM Plex Mono', 'SF Mono', monospace;
+  font-size: 11px;
+  line-height: 1.65;
+  color: var(--text);
+  overflow-x: auto;
+  white-space: pre;
+  max-height: 260px;
+  overflow-y: auto;
 }

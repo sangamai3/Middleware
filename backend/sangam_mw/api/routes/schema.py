@@ -120,13 +120,12 @@ def _detect_and_parse(text: str, hint: str | None) -> "pd.DataFrame":
     stripped = text.strip()
     fmt = (hint or "").lower()
 
-    if fmt == "csv" or (not fmt and "," in stripped.split("\n")[0] and not stripped.startswith("{")):
-        return _parse_csv(stripped)
+    # JSON takes priority — both array `[` and object `{` starts
     if fmt == "json" or stripped.startswith(("{", "[")):
         return _parse_json(stripped)
     if fmt == "xml" or stripped.startswith("<"):
         return _parse_xml(stripped)
-    # Fallback: try CSV
+    # Default to CSV (also handles explicit fmt == "csv")
     return _parse_csv(stripped)
 
 

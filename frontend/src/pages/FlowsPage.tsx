@@ -252,7 +252,13 @@ export function FlowsPage() {
   const [showAiModal, setShowAiModal] = useState(false)
   const importRef = useRef<HTMLInputElement>(null)
 
-  const { data: flows = [], isLoading } = useQuery({
+  const {
+    data: flows = [],
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery({
     queryKey: ['flows'],
     queryFn: () => flowsApi.list(),
   })
@@ -490,6 +496,23 @@ export function FlowsPage() {
 
         {isLoading ? (
           <div className="flows-page__loading">Loading flows…</div>
+        ) : isError ? (
+          <EmptyPanel
+            icon="!"
+            title="Could not load flows"
+            description={
+              error instanceof ApiError && error.status === 401
+                ? 'Your session may have expired. Sign out and log in again, then refresh this page.'
+                : error instanceof Error
+                  ? error.message
+                  : 'The flows API returned an error.'
+            }
+            action={
+              <button type="button" className="btn btn--primary" onClick={() => refetch()}>
+                Retry
+              </button>
+            }
+          />
         ) : filtered.length === 0 ? (
           <EmptyPanel
             icon="◇"
